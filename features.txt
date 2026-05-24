@@ -30,7 +30,7 @@ MONITORING INFRASTRUCTURE
  18.  SSH port check with banner capture
  19.  HTTP/HTTPS HEAD request probe (self-signed SSL support)
  20.  Per-device timeout control (0.5–30 seconds)
- 21.  Four status states: online, offline, pending, unknown
+ 21.  Four status states: online (green), offline (red), pending (blue), degraded (amber)
  22.  Millisecond-precision latency measurement
  23.  Continuous uptime tracking (online_since timestamp)
  24.  Rolling 10-sample average latency
@@ -67,8 +67,8 @@ DEVICES (TARGETS)
 
 DASHBOARD DISPLAY
  49.  Resizable card grid layout
- 50.  Room status rollup (pending > offline > degraded > online > unknown)
- 51.  Status color coding: green, red, yellow, gray
+ 50.  Room status rollup: blue (unchecked), green (all online), amber (mixed), red (all offline)
+ 51.  Status color coding: blue, green, amber, red
  52.  Vertical LED rail showing per-device status
  53.  Multi-column device table (Device, Status, IP, Uptime, Latency)
  54.  Device row hover highlighting

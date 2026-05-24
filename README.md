@@ -3,7 +3,7 @@
 **Network device monitor for AV and IT infrastructure.**
 
 Vigil is a lightweight local web application that monitors network gear by room.
-Add rooms, register devices by IP address, and watch live green/red status lights
+Add rooms, register devices by IP address, and watch live status lights
 update automatically via ICMP ping or UDP handshake polling -- no cloud, no account,
 no database, nothing to configure beyond Python and two packages.
 
@@ -289,7 +289,7 @@ All your rooms, devices, and settings load automatically from `config.json`.
 - **HTTPS built in** -- Runs on HTTPS automatically so Chrome and Edge connect without issues
 - **Night skyline header** -- City skyline with stars, lit building windows, and antenna beacons
 - **Room-based layout** -- Organise devices into named rooms (Server Room, AV Hub, Classroom, etc.)
-- **Live status lights** -- Green pulsing ring = online, solid red = offline, dim grey = not yet polled
+- **Live status lights** -- Blue = not yet checked, green = online, red = offline, amber = mixed
 - **Per-room polling** -- Each room has its own poll interval (5-minute increments, 5 min to 2 hours)
 - **Four check methods** -- ICMP ping, UDP handshake, SSH port check, and HTTP(S) HEAD request
 - **Per-device overrides** -- Each device can override the room-level check type and timeout
@@ -406,13 +406,32 @@ Settings header has **Export** and **Import** buttons for backup and restore.
 
 ### Status Lights
 
+**Device LEDs:**
+
 | Light           | Meaning                                               |
 |-----------------|-------------------------------------------------------|
-| Green (pulsing) | Device responded to the last ping or UDP probe        |
+| Green (pulsing) | Device responded to the last check                    |
 | Red (solid)     | Device did not respond within the timeout             |
-| Grey (dim)      | Not yet polled -- just added or server just started   |
+| Blue (pulsing)  | Not yet checked -- just added or server just started  |
+
+**Room card colors:**
+
+| Color  | Meaning                                                |
+|--------|--------------------------------------------------------|
+| Blue   | No devices in the room have been checked yet           |
+| Green  | All devices in the room are online                     |
+| Amber  | Some devices are online, some are offline              |
+| Red    | All devices in the room are offline                    |
 
 The dashboard refreshes automatically every 5 seconds.
+
+### Poll Timing
+
+At startup, all rooms appear blue. Vigil does not flood the network with
+requests -- a global limit of 10 concurrent checks is enforced. Devices
+within each room are checked one at a time, sequentially. If a check times
+out, it holds its slot until complete before the next device is checked.
+Rooms transition from blue to green, amber, or red as results arrive.
 
 ### Column Controls
 
