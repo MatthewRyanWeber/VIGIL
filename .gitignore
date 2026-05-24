@@ -33,8 +33,9 @@ vigil-key.pem
 .vigil-trust-installed
 
 # PyInstaller build artifacts
-Vigilwin11/build/
-Vigilwin11/dist/
+build/
+dist/
+*.spec
 *.spec.bak
 
 # Node artifacts (screenshot capture)
