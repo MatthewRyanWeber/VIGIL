@@ -15,6 +15,7 @@ no database, nothing to configure beyond Python and two packages.
 
 ## Table of Contents
 
+- [Windows 11 Standalone (.exe)](#windows-11-standalone-exe)
 - [Complete Setup Guide (Start Here)](#complete-setup-guide-start-here)
   - [What You Need](#what-you-need)
   - [Step 1 -- Install Python](#step-1----install-python)
@@ -63,6 +64,21 @@ no database, nothing to configure beyond Python and two packages.
   - [Device & Room Issues](#device--room-issues)
   - [Configuration Issues](#configuration-issues)
   - [Network & Performance Issues](#network--performance-issues)
+
+---
+
+## Windows 11 Standalone (.exe)
+
+If you are on Windows 11 and don't want to install Python, use the pre-built
+executable in the [`VigilWin11/`](VigilWin11/) folder.
+
+1. Download the `VigilWin11` folder (or clone this repo)
+2. Double-click `Vigil.exe`
+3. Chrome or Edge opens automatically to `https://127.0.0.1:9443`
+
+No Python, no pip, no command line required. See
+[`VigilWin11/README.md`](VigilWin11/README.md) for full Windows documentation
+including command-line options, firewall setup, and troubleshooting.
 
 ---
 

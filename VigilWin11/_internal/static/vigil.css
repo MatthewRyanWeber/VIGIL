@@ -1,0 +1,478 @@
+﻿/* Hallmark · genre: atmospheric · theme: Midnight · redesign
+ * anchor: warm copper hue 55 · display: Tomorrow · body: Geist */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg0:oklch(13.5% 0.01 55);
+  --bg1:oklch(17% 0.012 55);
+  --bg2:oklch(20.5% 0.013 55);
+  --bg3:oklch(25% 0.011 55);
+  --bg4:oklch(30% 0.01 55);
+  --border:oklch(25% 0.008 55);
+  --border2:oklch(31% 0.01 55);
+  --border3:oklch(40% 0.008 55);
+
+  --text:oklch(93% 0.005 55);
+  --text2:oklch(78% 0.008 55);
+  --dim:oklch(57% 0.012 55);
+  --faint:oklch(40% 0.008 55);
+
+  --accent:oklch(73% 0.14 65);
+  --amber:oklch(73% 0.14 65);
+  --amber-dim:oklch(53% 0.11 60);
+  --green:oklch(69% 0.155 148);
+  --green-glow:oklch(69% 0.155 148 / 0.45);
+  --red:oklch(63% 0.19 27);
+  --red-glow:oklch(63% 0.19 27 / 0.45);
+  --yellow:oklch(73% 0.13 85);
+
+  --status-online:oklch(69% 0.155 148);
+  --status-online-glow:oklch(69% 0.155 148 / 0.18);
+  --status-offline:oklch(63% 0.19 27);
+  --status-offline-glow:oklch(63% 0.19 27 / 0.18);
+  --status-pending:oklch(62% 0.16 255);
+  --status-pending-glow:oklch(62% 0.16 255 / 0.22);
+  --status-unknown:oklch(57% 0.01 55);
+  --status-unknown-glow:oklch(57% 0.01 55 / 0.12);
+
+  --display:'Tomorrow',system-ui,sans-serif;
+  --ui:'Geist',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'Consolas',monospace;
+
+  --radius:6px;
+  --shadow-sm:0 1px 3px oklch(0% 0 0 / 0.25);
+  --shadow-md:0 3px 12px oklch(0% 0 0 / 0.4);
+  --shadow-lg:0 12px 32px oklch(0% 0 0 / 0.5);
+
+  --ease-out:cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:cubic-bezier(0.77, 0, 0.175, 1);
+  --dur-fast:150ms;
+  --dur-normal:220ms;
+  --dur-slow:380ms;
+}
+
+html{background:var(--bg0) !important}
+html,body{color-scheme:dark}
+input,select,textarea,button{color-scheme:dark;background-color:var(--bg0);color:var(--text)}
+input:-webkit-autofill,input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px var(--bg2) inset !important;-webkit-text-fill-color:var(--text) !important;caret-color:var(--text)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg0)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:5px;border:2px solid var(--bg0)}
+::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+::selection{background:oklch(73% 0.14 65 / 0.35);color:oklch(98% 0 0)}
+
+
+body{background:radial-gradient(ellipse 60% 50% at 12% 18%,oklch(18% 0.035 55 / 0.5),transparent),radial-gradient(ellipse 50% 55% at 88% 80%,oklch(16% 0.03 35 / 0.35),transparent),var(--bg0);color:var(--text);font-family:var(--ui);font-size:13px;font-weight:400;line-height:1.4;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* ── Screens ── */
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex}
+
+/* ═══════════════════════════════ HEADER ══════════════════════════════════════
+   Top app bar: brand mark + "VIGIL" wordmark on the left, Dashboard / Settings
+   tab buttons in the middle, clock + privacy link on the right. Sticks to the
+   top with shadow + z-index so dropdowns and modals layer above it correctly.
+   ═════════════════════════════════════════════════════════════════════════ */
+header{height:58px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0;flex-shrink:0;box-shadow:var(--shadow-md);position:relative;z-index:10}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:oklch(100% 0 0 / 0.03);pointer-events:none}
+.hdr-brand{display:flex;align-items:center;padding:0 22px 0 20px;border-right:1px solid var(--border);flex-shrink:0}
+.hdr-brand-mark{width:28px;height:28px;background:var(--amber);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-right:12px;box-shadow:0 1px 3px oklch(0% 0 0 / 0.35),0 0 12px oklch(73% 0.14 65 / 0.15)}
+.hdr-brand-mark::after{content:'';width:8px;height:8px;background:var(--bg0);border-radius:50%;box-shadow:inset 0 1px 2px oklch(0% 0 0 / 0.5)}
+.hdr-title{font-family:var(--display);font-size:18px;font-weight:700;color:var(--text);letter-spacing:.18em;line-height:1}
+.hdr-sub{font-family:var(--mono);font-weight:500;font-size:8.5px;color:var(--dim);letter-spacing:.22em;text-transform:uppercase;margin-top:4px}
+.hdr-tabs{display:flex;align-items:stretch;gap:0;padding:0;height:100%}
+.hdr-tab{background:transparent;border:none;font-family:var(--ui);font-size:11px;font-weight:500;color:var(--text2);padding:0 20px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent;transition:color var(--dur-fast) var(--ease-out),background var(--dur-normal) var(--ease-out),border-color var(--dur-normal) var(--ease-out);display:flex;align-items:center;border-right:1px solid transparent}
+.hdr-tab:hover{color:var(--text);background:oklch(100% 0 0 / 0.02)}
+.hdr-tab:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
+.hdr-tab.active{color:var(--amber);border-bottom-color:var(--amber);background:oklch(73% 0.14 65 / 0.06)}
+.hdr-stats{display:flex;align-items:center;gap:8px;padding:0 16px;flex:1}
+.stat-pill{display:flex;align-items:center;gap:7px;background:oklch(0% 0 0 / 0.2);border:1px solid var(--border);padding:5px 11px;font-size:11px;border-radius:var(--radius);font-family:var(--ui)}
+.stat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.stat-dot.g{background:var(--green);box-shadow:0 0 6px var(--green-glow)}
+.stat-dot.r{background:var(--red);box-shadow:0 0 6px var(--red-glow)}
+.stat-val{color:var(--text);font-weight:600;font-family:var(--mono);font-size:11px}
+.stat-lbl{color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.hdr-right{display:flex;align-items:center;gap:8px;padding:0 16px;border-left:1px solid var(--border);flex-shrink:0}
+.hdr-clock{font-family:var(--mono);font-size:11px;color:var(--text2);white-space:nowrap;padding-left:12px;border-left:1px solid var(--border);letter-spacing:.02em;font-weight:500}
+.col-strip{display:flex;align-items:center;gap:2px;padding:0 14px;border-right:1px solid var(--border)}
+.col-btn{background:transparent;border:1px solid var(--border);color:var(--dim);font-family:var(--mono);font-size:10px;font-weight:500;padding:4px 8px;cursor:pointer;transition:color var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),background var(--dur-fast) var(--ease-out);border-radius:var(--radius);min-width:26px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.col-btn:hover{color:var(--text2);border-color:var(--border2);background:var(--bg3)}
+.col-btn:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+.col-btn.active{border-color:var(--amber);color:var(--amber);background:oklch(73% 0.14 65 / 0.08)}
+
+/* ─── Common buttons ─── */
+.btn{background:var(--bg2);border:1px solid var(--border2);color:var(--text);font-family:var(--ui);font-size:11px;font-weight:500;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:background var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out);letter-spacing:.02em;border-radius:var(--radius);line-height:1.3}
+.btn:hover{background:var(--bg3);border-color:var(--border3);color:var(--text)}
+.btn:active{background:var(--bg1);transform:scale(0.97)}
+.btn.loading{opacity:.55;pointer-events:none}
+.btn:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+.btn.primary{background:var(--amber);border-color:var(--amber-dim);color:oklch(15% 0.01 55);font-weight:600;box-shadow:0 1px 3px oklch(0% 0 0 / 0.25),0 0 10px oklch(73% 0.14 65 / 0.1)}
+.btn.primary:hover{background:oklch(77% 0.15 65);border-color:var(--amber)}
+.btn.primary:active{transform:scale(0.96)}
+.btn.danger{background:var(--bg2);color:var(--text2)}
+.btn.danger:hover{background:oklch(63% 0.19 27 / 0.12);border-color:var(--red);color:var(--red)}
+.btn.sm{font-size:10px;padding:5px 10px;min-height:28px}
+.btn.ghost{background:transparent;border-color:var(--border)}
+.btn.ghost:hover{background:var(--bg2);border-color:var(--border2)}
+
+/* ═══════════════════════════════ DASHBOARD ═══════════════════════════════════
+   Live monitoring view: a grid of resizable room cards, each with a device
+   table inside. Status flows up: device LEDs roll up to the card's left-edge
+   color strip (online / offline / degraded / pending / unknown).
+   ═════════════════════════════════════════════════════════════════════════ */
+#screen-dash .main-body{padding:16px 20px 24px;flex:1;overflow-y:auto}
+.rooms-grid{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;background-image:linear-gradient(oklch(100% 0 0 / 0.03) 1px,transparent 1px),linear-gradient(90deg,oklch(100% 0 0 / 0.03) 1px,transparent 1px);background-size:20px 20px;background-position:-1px -1px;border-radius:var(--radius);padding:10px}
+.room-card{
+  position:relative;background:var(--bg1);
+  border:1px solid var(--border2);border-radius:var(--radius);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  box-shadow:
+    inset 0 1px 0 oklch(100% 0 0 / 0.03),
+    0 2px 6px oklch(0% 0 0 / 0.35);
+  transition:border-color var(--dur-normal) var(--ease-out),box-shadow var(--dur-slow) var(--ease-out),transform var(--dur-normal) var(--ease-out);
+  resize:both;min-width:140px;min-height:70px;flex:0 0 auto;
+  width:calc((100% - 10px * (var(--cols,3) - 1)) / var(--cols,3));
+  --status-color:var(--status-unknown);
+  --status-glow:var(--status-unknown-glow);
+}
+.room-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--status-color);
+  box-shadow:0 0 10px var(--status-glow);
+  border-radius:var(--radius) 0 0 var(--radius);
+  z-index:2;
+}
+.room-card:hover{
+  border-color:var(--border3);
+  transform:translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 oklch(100% 0 0 / 0.04),
+    0 6px 16px oklch(0% 0 0 / 0.4),
+    0 0 24px var(--status-glow);
+}
+.room-card[data-status="online"]{--status-color:var(--status-online);--status-glow:var(--status-online-glow)}
+.room-card[data-status="offline"]{
+  --status-color:var(--status-offline);
+  --status-glow:var(--status-offline-glow);
+  border-color:oklch(63% 0.19 27 / 0.35);
+  box-shadow:
+    inset 0 1px 0 oklch(100% 0 0 / 0.03),
+    inset 0 0 0 1px oklch(63% 0.19 27 / 0.12),
+    0 2px 6px oklch(0% 0 0 / 0.35),
+    0 0 28px oklch(63% 0.19 27 / 0.08);
+}
+.room-card[data-status="degraded"]{
+  --status-color:var(--amber);
+  --status-glow:oklch(73% 0.14 65 / 0.22);
+  border-color:oklch(73% 0.14 65 / 0.3);
+  box-shadow:
+    inset 0 1px 0 oklch(100% 0 0 / 0.03),
+    inset 0 0 0 1px oklch(73% 0.14 65 / 0.12),
+    0 2px 6px oklch(0% 0 0 / 0.35),
+    0 0 28px oklch(73% 0.14 65 / 0.08);
+}
+.room-card[data-status="pending"]{--status-color:var(--status-pending);--status-glow:var(--status-pending-glow)}
+.room-card[data-status="unknown"]{--status-color:var(--status-unknown);--status-glow:var(--status-unknown-glow)}
+.room-card::after{content:'';position:absolute;bottom:3px;right:3px;width:8px;height:8px;border-right:2px solid var(--border3);border-bottom:2px solid var(--border3);border-radius:0 0 2px 0;opacity:0.25;pointer-events:none;z-index:2;transition:opacity var(--dur-fast) var(--ease-out)}
+.room-card:hover::after{opacity:0.5}
+.room-card::-webkit-resizer{background:linear-gradient(135deg,transparent 50%,var(--border3) 50%,var(--border3) 60%,transparent 60%,transparent 70%,var(--border3) 70%,var(--border3) 80%,transparent 80%)}
+.room-hd{display:flex;align-items:center;padding:6px 12px 6px 14px;border-bottom:1px solid var(--border);background:var(--bg2);gap:8px;position:relative;cursor:grab;user-select:none}
+.room-hd:active{cursor:grabbing}
+.room-card.dragging{opacity:.45}
+.room-card.drag-over{outline:2px dashed var(--status-online);outline-offset:-2px}
+.room-hd::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:oklch(100% 0 0 / 0.03)}
+.room-name-label{font-family:var(--ui);font-size:12px;font-weight:600;color:var(--text);flex:0 0 auto;white-space:nowrap;letter-spacing:.02em;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.room-count{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--dim);flex:0 100 auto;background:oklch(0% 0 0 / 0.25);padding:2px 7px;border:1px solid var(--border);border-radius:3px;letter-spacing:0;overflow:hidden;white-space:nowrap;min-width:0}
+.room-poll{font-size:10px;color:var(--dim);opacity:0;transition:opacity var(--dur-fast) var(--ease-out);flex-shrink:0;display:inline-block}
+.room-poll.active{opacity:1;color:var(--amber);animation:poll-spin 1.5s linear infinite}
+.room-card:hover .room-poll:not(.active){opacity:0.4}
+@keyframes poll-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.room-poll-btn,.room-reset-btn{background:transparent;border:1px solid var(--border);color:var(--dim);font-size:12px;line-height:1;padding:4px 8px;min-height:28px;cursor:pointer;border-radius:3px;opacity:0;transition:opacity var(--dur-fast) var(--ease-out),color var(--dur-fast) var(--ease-out);flex-shrink:0}
+.room-reset-btn{margin-left:auto}
+.room-card:hover .room-poll-btn,.room-card:hover .room-reset-btn{opacity:1}
+.room-poll-btn:hover,.room-reset-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── Medialon-style dense device table ─────────────────────────────── */
+/* ── room-card body: LED rail (sticky-left) + scrollable table area ── */
+.room-body{flex:1;min-height:0;overflow:auto;display:flex;align-items:flex-start;position:relative}
+.led-rail{flex:0 0 28px;align-self:stretch;position:sticky;left:0;top:0;z-index:3;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.led-rail-hd{flex:0 0 28px;height:28px;background:oklch(0% 0 0 / 0.15);border-bottom:1px solid var(--border)}
+.led-slot{flex:0 0 28px;height:28px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border)}
+.led-slot:last-child{border-bottom:none}
+.table-area{flex:1;min-width:0;align-self:stretch;overflow:hidden}
+
+#screen-dash .dev-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:auto}
+#screen-dash .dev-table thead th{font-family:var(--ui);font-size:9px;font-weight:600;color:var(--dim);text-align:left;padding:5px 9px;height:28px;box-sizing:border-box;border-bottom:1px solid var(--border);background:oklch(0% 0 0 / 0.15);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;position:relative;user-select:none}
+.dev-table th.col-name{width:var(--col-name-w,auto)}
+.dev-table th.col-ip{width:var(--col-ip-w,auto)}
+.dev-table th.col-status{width:var(--col-status-w,54px)}
+.dev-table th.col-uptime{width:var(--col-uptime-w,50px);text-align:right}
+.dev-table th.col-latency{width:var(--col-latency-w,50px);text-align:right;padding-right:12px}
+.col-resize-handle{position:absolute;top:0;right:-5px;bottom:0;width:10px;cursor:col-resize;z-index:3;background:transparent;transition:background var(--dur-fast) var(--ease-out)}
+.col-resize-handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:24px;border-radius:1px;background:var(--border2);opacity:0;transition:opacity var(--dur-fast) var(--ease-out)}
+.col-resize-handle:hover::after,.col-resize-handle.dragging::after{opacity:1;background:var(--amber)}
+.col-resize-handle:hover,.col-resize-handle.dragging{background:linear-gradient(90deg,transparent,oklch(73% 0.14 65 / 0.15),transparent)}
+body.resizing-col{cursor:col-resize !important;user-select:none}
+body.resizing-col *{cursor:col-resize !important;user-select:none !important}
+.dev-table tbody tr:hover{background:oklch(100% 0 0 / 0.02)}
+.dev-table tbody td{padding:5px 9px;height:28px;box-sizing:border-box;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--ui);font-size:12px;border-bottom:1px solid var(--border)}
+.dev-table tbody tr:last-child td{border-bottom:none}
+.dev-table td.td-name{color:var(--text);font-weight:500}
+.dev-table td.td-ip{color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:400}
+.dev-table td.td-status{font-family:var(--ui);font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.dev-table td.td-status.online{color:var(--green)}
+.dev-table td.td-status.offline{color:var(--red)}
+.dev-table td.td-status.pending{color:oklch(62% 0.16 255)}
+.dev-table td.td-status.unknown{color:var(--dim)}
+.dev-table td.td-uptime{color:var(--text2);text-align:right;font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
+.dev-table td.td-latency{color:var(--text2);text-align:right;padding-right:14px;font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
+.dev-table td.td-type{color:var(--text2);font-family:var(--mono);font-size:11px}
+.dev-table td.td-actions{text-align:right;padding-right:12px;white-space:nowrap}
+.dev-table td.td-actions .btn{margin-left:4px}
+
+/* Circular status LEDs — refined glow */
+.status-light{width:11px;height:11px;border-radius:50%;flex-shrink:0;position:relative;display:inline-block;background:oklch(45% 0 0);box-shadow:0 0 0 1px oklch(0% 0 0 / 0.4)}
+.status-light.online{background:var(--green);box-shadow:0 0 0 1px oklch(69% 0.155 148 / 0.4),0 0 10px var(--green-glow)}
+.status-light.online::after{content:'';position:absolute;inset:-2px;border-radius:50%;background:transparent;border:1px solid var(--green);animation:pulse 2.4s ease-out infinite;opacity:0}
+@keyframes pulse{0%{transform:scale(.8);opacity:.6}100%{transform:scale(2.2);opacity:0}}
+.status-light.offline{background:var(--red);box-shadow:0 0 0 1px oklch(63% 0.19 27 / 0.4),0 0 8px var(--red-glow)}
+.status-light.pending{background:oklch(62% 0.16 255);box-shadow:0 0 0 1px oklch(62% 0.16 255 / 0.4),0 0 10px oklch(62% 0.16 255 / 0.55)}
+.status-light.pending::after{content:'';position:absolute;inset:-2px;border-radius:50%;background:transparent;border:1px solid oklch(62% 0.16 255);animation:pulse 1.6s ease-out infinite;opacity:0}
+.status-light.unknown{background:oklch(65% 0.01 55);box-shadow:0 0 0 1px oklch(0% 0 0 / 0.4),0 0 6px oklch(65% 0.01 55 / 0.5)}
+
+#screen-dash .no-devices{font-family:var(--ui);font-size:11px;color:var(--dim);padding:18px 14px;text-align:center;font-style:italic}
+
+/* ═══════════════════════════════ SETTINGS ════════════════════════════════════
+   Editor view: list of rooms with their device tables, plus inline forms for
+   adding new devices and a top form for adding new rooms. Mirrors the data
+   shape of the dashboard but with edit/delete controls per row.
+   ═════════════════════════════════════════════════════════════════════════ */
+#screen-settings .main-body{padding:18px 22px 28px;flex:1;overflow-y:auto}
+.settings-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.settings-hd-title{font-family:var(--ui);font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.14em;text-transform:uppercase}
+.add-room-bar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.input{background:var(--bg0);border:1px solid var(--border2);color:var(--text);font-family:var(--ui);font-size:12px;font-weight:400;padding:6px 10px;outline:none;min-width:0;border-radius:var(--radius);transition:border-color var(--dur-fast) var(--ease-out),background var(--dur-fast) var(--ease-out);line-height:1.3}
+.input:focus,.input:focus-visible{border-color:var(--amber);background:var(--bg2);box-shadow:0 0 0 3px oklch(73% 0.14 65 / 0.08);outline:none}
+.input::placeholder{color:var(--faint)}
+.input[type="number"]{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.select{background:var(--bg0);border:1px solid var(--border2);color:var(--text);font-family:var(--ui);font-size:12px;padding:6px 10px;cursor:pointer;outline:none;border-radius:var(--radius);transition:border-color var(--dur-fast) var(--ease-out)}
+.select:focus,.select:focus-visible{border-color:var(--amber);background:var(--bg2);box-shadow:0 0 0 3px oklch(73% 0.14 65 / 0.08);outline:none}
+
+/* Settings room card */
+.s-room-card{background:var(--bg1);border:1px solid var(--border2);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.s-room-hd{display:flex;align-items:center;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap;position:relative}
+.s-room-hd::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:oklch(100% 0 0 / 0.03)}
+.s-room-name{font-family:var(--ui);font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:120px;letter-spacing:.02em}
+.s-room-badge{font-size:8px;color:var(--dim);background:var(--bg0);border:1px solid var(--border);padding:1px 5px;letter-spacing:.05em;white-space:nowrap}
+.s-room-body{padding:8px 14px 12px 16px}
+
+/* Device table in settings */
+.dev-table{width:100%;border-collapse:collapse;margin-bottom:8px}
+.dev-table th{font-size:8px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-bottom:1px solid var(--border);font-weight:400;text-align:left}
+.dev-table td{padding:5px 8px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:middle}
+.dev-table tr:last-child td{border-bottom:none}
+.dev-table .td-name{color:var(--text)}
+.dev-table .td-ip{color:var(--accent);font-family:var(--mono)}
+.dev-table .td-type{color:var(--dim);font-size:9px;text-transform:uppercase}
+.dev-table .td-actions{text-align:right;white-space:nowrap}
+.dev-table td.td-actions .btn{margin-left:4px}
+.no-devices{font-size:10px;color:var(--dim);padding:6px 0}
+
+/* Add device form */
+.add-dev-form{background:var(--bg2);border:1px solid var(--border);border-top:none;padding:12px 14px;display:none}
+.add-dev-form.open{display:block}
+.form-label{font-family:var(--ui);font-size:9px;font-weight:600;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:3px}
+
+/* ═══════════════════════════════ MODALS ══════════════════════════════════════
+   Dialog overlay shared by every modal (rename room / edit device / etc).
+   .modal-bg.open toggles visibility; clicking the dark backdrop or pressing
+   Escape closes whichever one is open.
+   ═════════════════════════════════════════════════════════════════════════ */
+.modal-bg{display:none;position:fixed;inset:0;background:oklch(8% 0.01 55 / 0.8);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex;animation:backdropIn var(--dur-normal) var(--ease-out)}
+.modal{background:var(--bg1);border:1px solid oklch(100% 0 0 / 0.06);width:460px;max-width:95vw;animation:modalIn var(--dur-slow) var(--ease-out);border-radius:var(--radius);box-shadow:var(--shadow-lg),inset 0 1px 0 oklch(100% 0 0 / 0.06);overflow:hidden}
+@keyframes backdropIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:scale(0.96) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hd{background:var(--bg2);padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:relative}
+.modal-hd::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:oklch(100% 0 0 / 0.03)}
+.modal-title{font-family:var(--ui);font-size:13px;font-weight:600;color:var(--text);letter-spacing:.04em;text-transform:uppercase}
+.modal-close-btn{background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;line-height:1;padding:0 4px;transition:color var(--dur-fast) var(--ease-out);border-radius:var(--radius)}
+.modal-close-btn:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+.modal-close-btn:hover{color:var(--text)}
+.modal-body{padding:18px}
+.modal-body .form-row{margin-bottom:0}
+.modal-ft{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:var(--bg1)}
+
+/* ═══════════════════════════════ PRIVACY MODAL ═══════════════════════════════
+   Standalone overrides for the larger privacy-policy popup — it's wider and
+   longer than the editor modals and needs its own width/scroll rules.
+   ═════════════════════════════════════════════════════════════════════════ */
+#privacy-modal .modal{width:600px;max-height:90vh;display:flex;flex-direction:column}
+#privacy-modal .modal-body{overflow-y:auto;padding:20px 24px;font-size:11px;line-height:1.7;color:var(--dim)}
+#privacy-modal h2{font-family:var(--ui);font-size:15px;font-weight:600;color:var(--text);margin-bottom:16px}
+#privacy-modal h3{font-family:var(--ui);font-size:11px;font-weight:600;color:var(--accent);margin:14px 0 5px;text-transform:uppercase;letter-spacing:.08em}
+#privacy-modal p{margin-bottom:8px}
+
+/* ═══════════════════════════════ FOOTER ══════════════════════════════════════
+   Bottom status bar: online/offline counts, avg latency, last-poll time, and
+   the saved/unsaved indicator. Mirrored on both Dashboard and Settings screens.
+   ═════════════════════════════════════════════════════════════════════════ */
+footer{background:var(--bg1);border-top:1px solid var(--border);padding:6px 18px;font-family:var(--ui);font-size:10px;color:var(--dim);display:flex;align-items:center;gap:12px;flex-shrink:0;letter-spacing:.02em}
+footer a{color:var(--dim);text-decoration:none;cursor:pointer;transition:color var(--dur-fast) var(--ease-out)}
+footer a:hover{color:var(--amber)}
+footer .sep{color:var(--faint)}
+
+/* ═══════════════════════════════ NOTIFICATIONS ════════════════════════════════
+   Transient toast messages (success / error / info) stacked in the bottom-right.
+   Driven by the notify() helper in JS; auto-dismiss after a few seconds.
+   ═════════════════════════════════════════════════════════════════════════ */
+#notif{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.notif{background:var(--bg1);border:1px solid var(--border2);border-left-width:3px;border-radius:var(--radius);padding:10px 14px;font-family:var(--ui);font-size:12px;color:var(--text);pointer-events:auto;box-shadow:var(--shadow-md);min-width:240px;animation:toastIn var(--dur-normal) var(--ease-out)}
+.notif.dismissing{animation:toastOut var(--dur-fast) var(--ease-out) forwards}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-8px) scale(0.96)}}
+.notif.error{border-left-color:var(--red)}
+.notif.success{border-left-color:var(--green)}
+
+/* ═══════════════════════════════ LOGIN SCREEN ═══════════════════════════════
+   Full-viewport gate shown before any content. Centered card with PIN input
+   and a single "Unlock" button. Hidden once authenticated.
+   ═════════════════════════════════════════════════════════════════════════ */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg0);flex-direction:column;gap:24px}
+.login-card{background:var(--bg1);border:1px solid oklch(100% 0 0 / 0.06);border-radius:var(--radius);padding:32px 36px;width:340px;max-width:90vw;box-shadow:var(--shadow-md),inset 0 1px 0 oklch(100% 0 0 / 0.06);text-align:center;animation:loginIn var(--dur-slow) var(--ease-out)}
+@keyframes loginIn{from{opacity:0;transform:translateY(10px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.login-card .hdr-brand-mark{margin:0 auto 16px;width:40px;height:40px}
+.login-card .hdr-brand-mark::after{width:12px;height:12px}
+.login-title{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.18em;color:var(--text);margin-bottom:4px}
+.login-sub{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.22em;text-transform:uppercase;margin-bottom:24px}
+.login-input{width:100%;background:var(--bg0);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:18px;font-weight:500;padding:10px 14px;text-align:center;letter-spacing:.3em;outline:none;border-radius:var(--radius);transition:border-color var(--dur-fast) var(--ease-out);margin-bottom:14px}
+.login-input:focus{border-color:var(--amber);box-shadow:0 0 0 3px oklch(73% 0.14 65 / 0.1)}
+.login-input::placeholder{color:var(--faint);letter-spacing:.1em;font-size:13px}
+.login-err{color:var(--red);font-size:11px;min-height:18px;margin-bottom:10px}
+.login-btn{width:100%;background:var(--amber);border:1px solid var(--amber-dim);color:oklch(15% 0.01 55);font-family:var(--ui);font-size:12px;font-weight:600;padding:10px;cursor:pointer;border-radius:var(--radius);letter-spacing:.06em;transition:background var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out);box-shadow:0 1px 3px oklch(0% 0 0 / 0.25),0 0 10px oklch(73% 0.14 65 / 0.1)}
+.login-btn:active{transform:scale(0.98)}
+.login-btn:hover{background:oklch(77% 0.15 65)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ═══════════════════════════════ SECURITY TAB ═══════════════════════════════
+   Settings > Security: info panel, status indicator, PIN enable/disable/change.
+   ═════════════════════════════════════════════════════════════════════════ */
+.sec-info{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:4px;font-size:11px;line-height:1.7;color:var(--text2)}
+.sec-info-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;letter-spacing:.02em}
+.sec-status{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;padding:5px 12px;border-radius:var(--radius);border:1px solid var(--border)}
+.sec-status.on{color:var(--green);border-color:oklch(69% 0.155 148 / 0.3);background:oklch(69% 0.155 148 / 0.06)}
+.sec-status.off{color:var(--dim);border-color:var(--border);background:var(--bg2)}
+.sec-section{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.sec-section-title{font-size:9px;font-weight:600;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.sec-form-row{display:flex;gap:10px;align-items:flex-end}
+.sec-pin-input{width:160px;letter-spacing:.2em}
+.sec-body{padding:16px}
+.sec-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sec-dot.on{background:var(--green);box-shadow:0 0 4px var(--green-glow)}
+.sec-dot.off{background:var(--dim)}
+
+/* ─── Configuration tab ─── */
+.config-tab-body{max-width:480px}
+.config-hint{font-size:11px;color:var(--dim);margin:0 0 10px;line-height:1.5}
+.config-action{margin-bottom:24px}
+.config-import-label{cursor:pointer}
+
+/* ─── misc ─── */
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;box-shadow:0 0 4px var(--green-glow)}
+.save-dot.unsaved{background:var(--yellow);box-shadow:0 0 4px oklch(73% 0.13 85 / 0.5)}
+.sep{color:var(--border2)}
+
+/* ═══════════════════════════════ STAGGER & SKELETON ═════════════════════════
+   Cascading card entry on navigation. Shimmer placeholder for loading states.
+   ═════════════════════════════════════════════════════════════════════════ */
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.room-card.enter,.s-room-card.enter{opacity:0;animation:cardIn var(--dur-slow) var(--ease-out) both;animation-delay:calc(var(--i,0) * 50ms)}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skeleton{height:120px;background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s linear infinite;border-radius:var(--radius);border:1px solid var(--border)}
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--dim);font-size:12px;font-family:var(--ui);border:1px dashed var(--border2);border-radius:var(--radius);background:var(--bg1);transition:border-color var(--dur-normal) var(--ease-out)}
+.empty-state:hover{border-color:var(--border3)}
+.empty-state-compact{padding:20px;text-align:left}
+.confirm-msg{font-size:12px;line-height:1.6;color:var(--text2)}
+.empty-state-icon{margin:0 auto 10px;opacity:.35;display:block}
+
+/* ─── Settings tabs bar (extracted from inline styles) ─── */
+.settings-tabs-bar{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:0}
+.settings-tabs-bar .hdr-tab{font-size:10px;padding:5px 14px}
+.ws-label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.ws-name-display{font-size:12px;font-weight:600;color:var(--text)}
+.poll-status-text{font-size:10px;color:var(--dim);margin-left:4px}
+.sec-hint{font-size:11px;color:var(--text2);margin-bottom:10px}
+
+/* ─── Edit modal form ─── */
+.edit-top-row{gap:10px;margin-bottom:10px}
+.edit-bottom-row{gap:10px}
+.form-group-wide{flex:2}
+.input-full{width:100%}
+.input-port{width:80px}
+.input-timeout{width:70px}
+.input-interval{width:60px}
+
+/* ─── Room settings row ─── */
+.modal-form-col{flex-direction:column;gap:10px}
+
+/* ─── Misc layout helpers ─── */
+.sep-auto{margin-left:auto}
+.hdr-lock{margin-left:8px}
+.hdr-stats-spacer{flex:1}
+.poll-btn{font-size:9px}
+.confirm-narrow{width:380px}
+.ws-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.add-room-interval-wrap{display:flex;align-items:center;gap:4px}
+.interval-unit{font-size:9px;color:var(--dim)}
+.room-name-input{flex:2;min-width:140px}
+.privacy-link{color:var(--accent)}
+.port-group{display:none}
+.form-group-end{justify-content:flex-end}
+.form-actions{display:flex;gap:6px}
+.sec-status-wrap{margin-left:auto}
+
+/* ═══════════════════════════════ RESPONSIVE ═════════════════════════════════
+   Breakpoints for laptop (< 1200px) and tablet/narrow (< 768px).
+   Desktop multi-monitor is the primary use case, but the dashboard should
+   remain usable on a 1024px laptop screen.
+   ═════════════════════════════════════════════════════════════════════════ */
+@media(max-width:1200px){
+  .rooms-grid{--cols:2 !important}
+  .room-card{width:calc((100% - 10px) / 2)}
+  .stat-pill{padding:4px 8px;font-size:10px}
+}
+@media(max-width:768px){
+  header{height:auto;flex-wrap:wrap;padding:8px 0}
+  .hdr-brand{padding:0 12px}
+  .hdr-tabs{order:3;width:100%;border-top:1px solid var(--border);padding:0 8px}
+  .hdr-stats{order:4;width:100%;padding:6px 12px;border-top:1px solid var(--border)}
+  .hdr-right{order:2;margin-left:auto}
+  .col-strip{order:5;width:100%;justify-content:center;border-top:1px solid var(--border);border-right:none;padding:6px}
+  .rooms-grid{--cols:1 !important;padding:8px}
+  .room-card{width:100% !important;min-width:0}
+  #screen-dash .main-body,#screen-settings .main-body{padding:10px 12px 16px}
+  .add-room-bar{flex-direction:column}
+  .login-card{padding:24px 20px;width:90vw}
+  .modal{width:95vw}
+  .btn.sm{min-height:36px;padding:6px 12px}
+  .room-poll-btn,.room-reset-btn{min-height:36px;padding:6px 10px;opacity:1}
+}
+
+/* ─── Recently Removed (soft-delete recovery) ─── */
+#deleted-rooms-list{margin-top:18px;border-top:1px dashed var(--border2);padding-top:12px}
+#deleted-rooms-list .settings-hd-title{color:var(--dim)}
+.deleted-room-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--radius);background:var(--bg1);border:1px solid var(--border);margin-bottom:4px;font-family:var(--ui);font-size:11px}
+.deleted-room-name{font-weight:600;color:var(--text2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.deleted-room-meta{color:var(--dim);flex:1;text-align:right;white-space:nowrap;margin-right:4px}
+
+/* ═══════════════════════════════ REDUCED MOTION ═════════════════════════════
+   Respect prefers-reduced-motion: keep opacity and color transitions,
+   remove all transform-based movement and keyframe animations.
+   ═════════════════════════════════════════════════════════════════════════ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important}
+  *,*::before,*::after{transition-property:opacity,color,background-color,border-color,box-shadow !important;transition-duration:var(--dur-fast) !important}
+}

@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vigil — Network Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Tomorrow:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/vigil.css">
+</head>
+<body>
+<div id="notif" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div class="screen" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="hdr-brand-mark"></div>
+      <div class="login-title">VIGIL</div>
+      <div class="login-sub">Network Monitor</div>
+      <input class="login-input" type="password" id="login-pin" placeholder="Enter PIN" maxlength="32" autocomplete="off" aria-label="PIN">
+      <div class="login-err" id="login-err"></div>
+      <button class="login-btn" id="login-btn" onclick="doLogin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div class="screen" id="screen-dash">
+  <header>
+    <div class="hdr-brand">
+      <div class="hdr-brand-mark"></div>
+      <div><div class="hdr-title">VIGIL</div><div class="hdr-sub">Network Monitor</div></div>
+    </div>
+    <div class="hdr-tabs">
+      <button class="hdr-tab active" id="tab-dash"     onclick="switchTab('dash')">Dashboard</button>
+      <button class="hdr-tab"        id="tab-settings" onclick="switchTab('settings')">Settings</button>
+    </div>
+    <div class="col-strip" id="ws-strip"></div>
+    <div class="hdr-stats">
+      <div class="stat-pill"><div class="stat-dot g"></div><span class="stat-val" id="online-count">—</span><span class="stat-lbl">&nbsp;online</span></div>
+      <div class="stat-pill"><div class="stat-dot r"></div><span class="stat-val" id="offline-count">—</span><span class="stat-lbl">&nbsp;offline</span></div>
+      <div class="stat-pill"><span class="stat-val" id="avg-latency">—</span><span class="stat-lbl">&nbsp;avg</span></div>
+      <span class="poll-status-text" id="poll-status"></span>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-clock" id="clock">—</div>
+      <button class="btn sm ghost auth-only hdr-lock" onclick="doLogout()" title="Lock">⏻</button>
+    </div>
+  </header>
+  <div class="main-body">
+    <div class="rooms-grid" id="dash-grid">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+  <footer>
+    <span id="foot-count">0 devices</span>
+    <span class="sep">·</span>
+    <span><span class="save-dot" id="save-dot"></span><span id="save-label">saved</span></span>
+    <span class="sep sep-auto">·</span>
+    <a href="#privacy" onclick="showPrivacy(); return false;">Privacy Policy</a>
+    <span class="sep">·</span>
+    <span>Vigil v2.0</span>
+  </footer>
+</div>
+
+<!-- ═══════════════ SETTINGS ═══════════════ -->
+<div class="screen" id="screen-settings">
+  <header>
+    <div class="hdr-brand">
+      <div class="hdr-brand-mark"></div>
+      <div><div class="hdr-title">VIGIL</div><div class="hdr-sub">Network Monitor</div></div>
+    </div>
+    <div class="hdr-tabs">
+      <button class="hdr-tab"        id="tab-dash2"      onclick="switchTab('dash')">Dashboard</button>
+      <button class="hdr-tab active" id="tab-settings2"  onclick="switchTab('settings')">Settings</button>
+    </div>
+    <div class="hdr-stats hdr-stats-spacer"></div>
+    <div class="hdr-right">
+      <button class="btn poll-btn" onclick="triggerPoll()">⟳ Poll</button>
+      <div class="hdr-clock" id="clock2">—</div>
+      <button class="btn sm ghost auth-only hdr-lock" onclick="doLogout()" title="Lock">⏻</button>
+    </div>
+  </header>
+  <div class="main-body">
+    <!-- Settings tabs -->
+    <div class="settings-tabs-bar">
+      <button class="hdr-tab active" id="stab-rooms"    onclick="switchSettingsTab('rooms')">Rooms &amp; Devices</button>
+      <button class="hdr-tab auth-only" id="stab-security" onclick="switchSettingsTab('security')">Security</button>
+      <button class="hdr-tab" id="stab-config"   onclick="switchSettingsTab('config')">Configuration</button>
+    </div>
+
+    <!-- Security tab (rendered dynamically by renderSecurityTab()) -->
+    <div id="stab-content-security" style="display:none"></div>
+
+    <!-- Configuration tab (rendered dynamically by renderConfigTab()) -->
+    <div id="stab-content-config" style="display:none"></div>
+
+    <!-- Rooms tab -->
+    <div id="stab-content-rooms">
+      <div class="ws-bar">
+        <span class="ws-label">Workspace:</span>
+        <span class="ws-name-display" id="ws-settings-name">—</span>
+        <button class="btn sm" onclick="renameWs(_activeWsId)">Rename</button>
+        <button class="btn sm" onclick="popoutWs(_activeWsId)">Pop Out</button>
+      </div>
+      <div class="settings-hd">
+        <span class="settings-hd-title">Add Room</span>
+      </div>
+      <div class="add-room-bar">
+        <input class="input room-name-input" type="text" id="new-room-name" placeholder="Room name…">
+        <div class="add-room-interval-wrap">
+          <input class="input input-interval" type="number" id="new-room-interval" value="5" min="5" max="120" step="5">
+          <span class="interval-unit">min</span>
+        </div>
+        <button class="btn primary" onclick="addRoom()">+ Add Room</button>
+      </div>
+      <div id="settings-rooms-list">
+        <div class="skeleton" style="height:80px"></div><div class="skeleton" style="height:80px;margin-top:8px"></div>
+      </div>
+      <div id="deleted-rooms-list" style="display:none"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span id="foot-count2">0 devices</span>
+    <span class="sep">·</span>
+    <span><span class="save-dot" id="save-dot2"></span><span id="save-label2">saved</span></span>
+    <span class="sep sep-auto">·</span>
+    <a href="#privacy" onclick="showPrivacy(); return false;">Privacy Policy</a>
+    <span class="sep">·</span>
+    <span>Vigil v2.0</span>
+  </footer>
+</div>
+
+<!-- ═══════════════ EDIT DEVICE MODAL ═══════════════ -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal" role="dialog" aria-label="Edit Device">
+    <div class="modal-hd">
+      <span class="modal-title">Edit Device</span>
+      <button class="modal-close-btn" aria-label="Close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-room-id">
+      <input type="hidden" id="edit-dev-id">
+      <div class="form-row edit-top-row">
+        <div class="form-group form-group-wide">
+          <label class="form-label" for="edit-name">Device Name</label>
+          <input class="input input-full" type="text" id="edit-name" placeholder="e.g. Core Switch">
+        </div>
+        <div class="form-group form-group-wide">
+          <label class="form-label" for="edit-ip">IP Address</label>
+          <input class="input input-full" type="text" id="edit-ip" placeholder="192.168.1.1">
+        </div>
+      </div>
+      <div class="form-row edit-bottom-row">
+        <div class="form-group">
+          <label class="form-label" for="edit-check-type">Check Type</label>
+          <select class="select" id="edit-check-type" onchange="toggleEditPort()">
+            <option value="ping" title="ICMP echo — tests host reachability">ICMP Ping</option>
+            <option value="udp" title="UDP probe — online if host responds or refuses port">UDP</option>
+            <option value="ssh" title="TCP connect — online if SSH banner received">SSH</option>
+            <option value="http" title="HEAD request — online if server responds (follows redirects)">HTTP(S)</option>
+          </select>
+        </div>
+        <div class="form-group" id="edit-udp-group">
+          <label class="form-label" for="edit-udp-port">UDP Port</label>
+          <input class="input input-port" type="number" id="edit-udp-port" placeholder="9" min="1" max="65535">
+        </div>
+        <div class="form-group" id="edit-ssh-group">
+          <label class="form-label" for="edit-ssh-port">SSH Port</label>
+          <input class="input input-port" type="number" id="edit-ssh-port" placeholder="22" min="1" max="65535">
+        </div>
+        <div class="form-group" id="edit-http-group">
+          <label class="form-label" for="edit-http-port">HTTP Port</label>
+          <input class="input input-port" type="number" id="edit-http-port" placeholder="80" min="1" max="65535">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-timeout">Timeout (s)</label>
+          <input class="input input-timeout" type="number" id="edit-timeout" placeholder="2.0" min="0.5" max="30" step="0.5">
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeEditModal()">Cancel</button>
+      <button class="btn primary" onclick="saveDeviceEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ROOM SETTINGS MODAL ═══════════════ -->
+<div class="modal-bg" id="room-modal">
+  <div class="modal" role="dialog" aria-label="Room Settings">
+    <div class="modal-hd">
+      <span class="modal-title">Room Settings</span>
+      <button class="modal-close-btn" aria-label="Close" onclick="closeRoomModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="rs-room-id">
+      <div class="form-row modal-form-col">
+        <div class="form-group">
+          <label class="form-label" for="rs-name">Room Name</label>
+          <input class="input input-full" type="text" id="rs-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="rs-interval">Poll Interval (min)</label>
+          <input class="input input-timeout" type="number" id="rs-interval" min="5" max="120" step="5">
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeRoomModal()">Cancel</button>
+      <button class="btn primary" onclick="saveRoomSettings()">Save Room</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ WORKSPACE RENAME MODAL ═══════════════ -->
+<div class="modal-bg" id="ws-modal">
+  <div class="modal" role="dialog" aria-label="Workspace Settings">
+    <div class="modal-hd">
+      <span class="modal-title">Workspace Settings</span>
+      <button class="modal-close-btn" aria-label="Close" onclick="closeWsModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ws-edit-id">
+      <div class="form-row modal-form-col">
+        <div class="form-group">
+          <label class="form-label" for="ws-edit-name">Workspace Name</label>
+          <input class="input input-full" type="text" id="ws-edit-name">
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeWsModal()">Cancel</button>
+      <button class="btn primary" onclick="saveWsSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PRIVACY POLICY MODAL ═══════════════ -->
+<div class="modal-bg" id="privacy-modal">
+  <div class="modal" role="dialog" aria-label="Privacy Policy">
+    <div class="modal-hd">
+      <span class="modal-title">Privacy Policy</span>
+      <button class="modal-close-btn" aria-label="Close" onclick="closePrivacy()">×</button>
+    </div>
+    <div class="modal-body">
+      <h2>Vigil Network Monitor — Privacy Policy</h2>
+      <p><strong>Effective date: 2026 · Version 2.0</strong></p>
+
+      <h3>What Vigil Is</h3>
+      <p>Vigil is a locally-hosted network monitoring application. It runs entirely on your own computer or server. There is no hosted service, no cloud component, and no connection to any third-party server operated by this project.</p>
+
+      <h3>Data We Collect</h3>
+      <p>Vigil collects no personal data. The only information it stores is the network configuration you enter yourself — room names, device names, and IP addresses — along with your hashed access PIN. This information is stored in a file called <code>config.json</code> on your machine and is never transmitted anywhere.</p>
+
+      <h3>Data We Do Not Collect</h3>
+      <p>Vigil does not collect, transmit, or store: usage analytics, telemetry, crash reports, device fingerprints, user identities, browser information, or any form of tracking data. There are no cookies beyond the session token used to keep you logged in, and that token lives only in your browser's memory — it is not persisted to disk.</p>
+
+      <h3>Network Activity</h3>
+      <p>The only outbound network activity Vigil performs is the ICMP ping, UDP probe, and SSH connection requests you configure — directed at the devices you specify, on your own network. Vigil never connects to any address you have not explicitly configured.</p>
+      <p>The application loads fonts from Google Fonts CDN on first load. If you prefer fully offline operation, you can disable this by editing <code>index.html</code> to remove the Google Fonts link.</p>
+
+      <h3>Security</h3>
+      <p>All communication between your browser and Vigil is encrypted via HTTPS using a locally-generated self-signed certificate. Your PIN is stored as a PBKDF2-SHA256 hash — never in plaintext. Sessions expire after 8 hours and are not stored on disk.</p>
+
+      <h3>Third Parties</h3>
+      <p>Vigil has no relationship with any third-party data processor. No data from Vigil is shared with, sold to, or accessible by any third party.</p>
+
+      <h3>Your Rights</h3>
+      <p>Since Vigil stores no personal data and operates entirely on your own infrastructure, all data is inherently under your control. You can delete <code>config.json</code> at any time to remove all stored configuration.</p>
+
+      <h3>Contact</h3>
+      <p>Questions about this policy: <a href="https://github.com/MatthewRyanWeber" class="privacy-link">github.com/MatthewRyanWeber</a></p>
+    </div>
+    <div class="modal-ft">
+      <button class="btn primary" onclick="closePrivacy()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal confirm-narrow" role="alertdialog" aria-label="Confirm Action">
+    <div class="modal-hd">
+      <span class="modal-title" id="confirm-title">Confirm</span>
+      <button class="modal-close-btn" aria-label="Close" onclick="closeConfirm(false)">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-msg" id="confirm-msg"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeConfirm(false)">Cancel</button>
+      <button class="btn danger" id="confirm-ok" onclick="closeConfirm(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="/static/vigil.js"></script>
+</body>
+</html>

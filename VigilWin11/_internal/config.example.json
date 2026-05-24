@@ -1,0 +1,41 @@
+{
+  "workspaces": [
+    {
+      "id": "ws-output-1",
+      "name": "I",
+      "rooms": [
+        {
+          "id": "example-room-1",
+          "name": "Server Room",
+          "interval": 300,
+          "devices": [
+            {
+              "id": "example-device-1",
+              "name": "Gateway",
+              "ip": "192.168.1.1",
+              "check_type": "ping",
+              "udp_port": 9,
+              "ssh_port": 22,
+              "timeout": 2.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ws-output-2",
+      "name": "II",
+      "rooms": []
+    },
+    {
+      "id": "ws-output-3",
+      "name": "III",
+      "rooms": []
+    },
+    {
+      "id": "ws-output-4",
+      "name": "IIII",
+      "rooms": []
+    }
+  ]
+}

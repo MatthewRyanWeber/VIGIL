@@ -43,6 +43,13 @@ node_modules/
 package.json
 package-lock.json
 
+# VigilWin11 — track the exe, config, readme, and _internal bundle
+!VigilWin11/
+!VigilWin11/Vigil.exe
+!VigilWin11/config.json
+!VigilWin11/README.md
+!VigilWin11/_internal/**
+
 # Editors / OS
 .vscode/
 .idea/
