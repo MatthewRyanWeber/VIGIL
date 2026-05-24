@@ -11,6 +11,10 @@ no database, nothing to configure beyond Python and two packages.
 
 ![Vigil Settings](screenshots/settings.png)
 
+![Vigil Workspace II](screenshots/workspace2.png)
+
+![Vigil Detail View](screenshots/detail.png)
+
 ---
 
 ## Table of Contents
