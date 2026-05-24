@@ -114,9 +114,8 @@ def check_device(device: dict):
 # ─── Poll engine ─────────────────────────────────────────────────────────────
 
 class PollEngine:
-    TICK        = 5
-    STAGGER     = 0.15
-    MAX_WORKERS = 16
+    TICK           = 5
+    MAX_CONCURRENT = 10
 
     def __init__(self):
         self._thread = threading.Thread(target=self._run, daemon=True)
@@ -125,16 +124,14 @@ class PollEngine:
         self._next: dict = {}
         self._last_polled: dict = {}
         self._polling: set = set()
-        self._pool = concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.MAX_WORKERS, thread_name_prefix="vigil-poll")
+        self._semaphore = threading.Semaphore(self.MAX_CONCURRENT)
 
     def start(self):
-        log.info("Poll engine started.")
+        log.info("Poll engine started (max %d concurrent checks).", self.MAX_CONCURRENT)
         self._thread.start()
 
     def stop(self):
         self._stop.set()
-        self._pool.shutdown(wait=False)
         self._thread.join(timeout=5)
         flush_status()
         log.info("Poll engine stopped.")
@@ -181,19 +178,23 @@ class PollEngine:
                 if rid in self._polling:
                     continue
                 self._polling.add(rid)
-            self._pool.submit(self._poll_room, room, interval, now)
+            threading.Thread(target=self._poll_room, args=(room, interval, now),
+                             daemon=True).start()
 
     def _poll_room(self, room, interval, tick_time):
         rid = room.get("id")
         polled = 0
         try:
             for dev in room.get("devices", []):
+                if self._stop.is_set():
+                    return
                 did = dev.get("id")
                 if not did:
                     continue
                 eff = dict(dev)
                 if "check_type" not in eff:
                     eff["check_type"] = "ping"
+                self._semaphore.acquire()
                 try:
                     online, latency = check_device(eff)
                     set_status(did, "online" if online else "offline", latency)
@@ -201,8 +202,8 @@ class PollEngine:
                 except Exception as e:
                     set_status(did, "unknown")
                     log.warning(f"Poll error [{dev.get('name','?')}]: {e}")
-                if self._stop.wait(self.STAGGER):
-                    return
+                finally:
+                    self._semaphore.release()
         finally:
             with self._lock:
                 self._next[rid] = tick_time + interval

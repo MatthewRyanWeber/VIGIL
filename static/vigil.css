@@ -30,8 +30,8 @@
   --status-online-glow:oklch(69% 0.155 148 / 0.18);
   --status-offline:oklch(63% 0.19 27);
   --status-offline-glow:oklch(63% 0.19 27 / 0.18);
-  --status-pending:oklch(73% 0.14 65);
-  --status-pending-glow:oklch(73% 0.14 65 / 0.22);
+  --status-pending:oklch(62% 0.16 255);
+  --status-pending-glow:oklch(62% 0.16 255 / 0.22);
   --status-unknown:oklch(57% 0.01 55);
   --status-unknown-glow:oklch(57% 0.01 55 / 0.12);
 
@@ -173,6 +173,7 @@ header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;ba
     0 0 28px oklch(73% 0.14 65 / 0.08);
 }
 .room-card[data-status="pending"]{--status-color:var(--status-pending);--status-glow:var(--status-pending-glow)}
+.room-card[data-status="unchecked"]{--status-color:var(--status-pending);--status-glow:var(--status-pending-glow)}
 .room-card[data-status="unknown"]{--status-color:var(--status-unknown);--status-glow:var(--status-unknown-glow)}
 .room-card::after{content:'';position:absolute;bottom:3px;right:3px;width:8px;height:8px;border-right:2px solid var(--border3);border-bottom:2px solid var(--border3);border-radius:0 0 2px 0;opacity:0.25;pointer-events:none;z-index:2;transition:opacity var(--dur-fast) var(--ease-out)}
 .room-card:hover::after{opacity:0.5}
@@ -223,7 +224,7 @@ body.resizing-col *{cursor:col-resize !important;user-select:none !important}
 .dev-table td.td-status{font-family:var(--ui);font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
 .dev-table td.td-status.online{color:var(--green)}
 .dev-table td.td-status.offline{color:var(--red)}
-.dev-table td.td-status.pending{color:var(--amber)}
+.dev-table td.td-status.pending{color:oklch(62% 0.16 255)}
 .dev-table td.td-status.unknown{color:var(--dim)}
 .dev-table td.td-uptime{color:var(--text2);text-align:right;font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
 .dev-table td.td-latency{color:var(--text2);text-align:right;padding-right:14px;font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
@@ -237,8 +238,8 @@ body.resizing-col *{cursor:col-resize !important;user-select:none !important}
 .status-light.online::after{content:'';position:absolute;inset:-2px;border-radius:50%;background:transparent;border:1px solid var(--green);animation:pulse 2.4s ease-out infinite;opacity:0}
 @keyframes pulse{0%{transform:scale(.8);opacity:.6}100%{transform:scale(2.2);opacity:0}}
 .status-light.offline{background:var(--red);box-shadow:0 0 0 1px oklch(63% 0.19 27 / 0.4),0 0 8px var(--red-glow)}
-.status-light.pending{background:var(--amber);box-shadow:0 0 0 1px oklch(73% 0.14 65 / 0.4),0 0 10px oklch(73% 0.14 65 / 0.55)}
-.status-light.pending::after{content:'';position:absolute;inset:-2px;border-radius:50%;background:transparent;border:1px solid var(--amber);animation:pulse 1.6s ease-out infinite;opacity:0}
+.status-light.pending{background:oklch(62% 0.16 255);box-shadow:0 0 0 1px oklch(62% 0.16 255 / 0.4),0 0 10px oklch(62% 0.16 255 / 0.55)}
+.status-light.pending::after{content:'';position:absolute;inset:-2px;border-radius:50%;background:transparent;border:1px solid oklch(62% 0.16 255);animation:pulse 1.6s ease-out infinite;opacity:0}
 .status-light.unknown{background:oklch(65% 0.01 55);box-shadow:0 0 0 1px oklch(0% 0 0 / 0.4),0 0 6px oklch(65% 0.01 55 / 0.5)}
 
 #screen-dash .no-devices{font-family:var(--ui);font-size:11px;color:var(--dim);padding:18px 14px;text-align:center;font-style:italic}

@@ -677,9 +677,8 @@ function _initRoomDragOnce(grid) {
 }
 
 // ── room status rollup: worst-of devices, used for status strip + glow ─
-//   pending wins over everything (room is "warming up"); otherwise
+//   unchecked (blue) = no device polled yet; pending (blue) = some polled;
 //   offline > degraded > online > unknown.
-/** Reduce a room's device statuses into a single room-level status string. */
 function _roomStatus(devs) {
   if (!devs || !devs.length) return 'unknown';
   let online = 0, offline = 0, pending = 0;
@@ -689,7 +688,8 @@ function _roomStatus(devs) {
     else if (s === 'offline') offline++;
     else if (s === 'pending') pending++;
   }
-  if (pending > 0) return 'pending';            // still warming up
+  if (pending === devs.length) return 'pending';
+  if (pending > 0) return 'pending';
   if (offline === devs.length) return 'offline';
   if (offline > 0) return 'degraded';
   if (online === devs.length) return 'online';
