@@ -58,6 +58,11 @@ no database, nothing to configure beyond Python and two packages.
   - [Reachability Checks](#reachability-checks)
   - [Pre-Deployment Checklist](#pre-deployment-checklist)
 - [Troubleshooting](#troubleshooting)
+  - [Startup Issues](#startup-issues)
+  - [Browser Issues](#browser-issues)
+  - [Device & Room Issues](#device--room-issues)
+  - [Configuration Issues](#configuration-issues)
+  - [Network & Performance Issues](#network--performance-issues)
 
 ---
 
@@ -871,53 +876,92 @@ this fallback is available.
 
 ## Troubleshooting
 
-**Browser says "This site can't be reached" or "connection refused"**
+### Startup Issues
 
-The server is not running. Make sure `vigil.py` is running in a Command Prompt
-and the window is still open. Check that the address bar shows the correct URL:
-`https://127.0.0.1:8080` (https, not http, port 8080 not 5000).
+**Vigil won't start -- "SyntaxError" or "invalid syntax"**
 
-**HTTPS setup failed (No module named 'cryptography')**
-
-The cryptography package is not installed. Stop Vigil (Ctrl+C) and run:
+Python 3.10 or newer is required. Check your version:
 
 ```
-pip install cryptography
+python --version
 ```
 
-Then start Vigil again. You must see `Running on https://...` in the output,
-not `http://`, for the browser to connect successfully.
+If it shows 3.9 or older, install 3.10+ from https://www.python.org/downloads/
 
-**Browser shows "Your connection is not private" / "Not secure"**
+**"No module named 'flask'" or "No module named 'cryptography'"**
 
-This is expected on first visit. Click **Advanced** then **Proceed to 127.0.0.1**.
-You will only see this once per browser. See the
-[HTTPS and the Browser Security Warning](#https-and-the-browser-security-warning)
-section for full details.
+Install the required packages:
 
-**Room added in Settings but nothing appears**
+```
+pip install flask cryptography
+```
 
-1. Make sure you clicked **+ Add Room** after typing the room name
-2. Check the PowerShell/Command Prompt window for any error messages
-3. Try refreshing the page (F5) -- the room should appear immediately
-4. If nothing appears, open Chrome DevTools (F12), go to the Console tab,
-   try adding a room again, and paste any red error messages here
+**Port 9443 is already in use**
 
-**Device always shows offline but I can ping it manually**
-
-1. Check the IP address is correct in the device settings
-2. If the device blocks ICMP ping, switch to UDP and set the port to a
-   service running on that device (161 for SNMP, 41794 for Crestron CIP)
-3. Increase the device timeout if you are on a slow network
-4. Make sure the machine running Vigil has network access to the device
-
-**Port 8080 is already in use**
+Another instance of Vigil or another application is using the port. Either
+close the other process or start Vigil on a different port:
 
 ```
 python vigil.py --port 9000
 ```
 
-Then open `https://127.0.0.1:9000`.
+Then open `https://127.0.0.1:9000` in your browser.
+
+### Browser Issues
+
+**"This site can't be reached" or "connection refused"**
+
+1. Make sure `vigil.py` is still running in the Command Prompt window
+2. Verify the URL is `https://127.0.0.1:9443` (https, not http)
+3. Check the Command Prompt for error messages
+
+**"Your connection is not private" / "Not secure"**
+
+This is expected on first visit. Vigil uses a self-signed certificate.
+Click **Advanced** then **Proceed to 127.0.0.1**. You will only see this
+once per browser. See
+[HTTPS and the Browser Security Warning](#https-and-the-browser-security-warning)
+for details.
+
+**Dashboard is blank or rooms are missing**
+
+1. Hard-refresh the page with **Ctrl+Shift+R** to clear cached CSS/JS
+2. Open DevTools (F12) and check the Console tab for errors
+3. Verify `config.json` exists in the Vigil folder and is not empty
+
+### Device & Room Issues
+
+**All rooms stay blue and never change color**
+
+1. Check the Command Prompt for poll errors
+2. Make sure the machine running Vigil has network access to your devices
+3. Try clicking the refresh button on a room card to force an immediate poll
+4. Blue means no checks have completed yet -- if devices are timing out,
+   it may take longer for rooms to transition
+
+**Device shows offline but I can ping it manually**
+
+1. Verify the IP address is correct in device settings
+2. Some devices block ICMP ping -- switch to UDP or SSH check type and
+   set the port to a service on that device (e.g. 161 for SNMP, 22 for SSH,
+   41794 for Crestron CIP)
+3. Increase the device timeout if you are on a slow or congested network
+4. Make sure there is no firewall between Vigil and the device
+
+**Room is amber but all devices look fine**
+
+Amber means at least one device in the room is offline. Scroll through the
+device list and look for red LEDs. The device may have gone offline briefly
+and not yet been re-polled. Click the room refresh button to force a new check.
+
+**Room added in Settings but nothing appears on the Dashboard**
+
+1. Make sure you clicked **+ Add Room** after typing the room name
+2. Click **SAVE** to write the config -- unsaved rooms are not polled
+3. Refresh the page (F5) if the room still does not appear
+4. Check the Command Prompt window for any error messages
+
+### Configuration Issues
 
 **config.json was accidentally deleted**
 
@@ -925,10 +969,38 @@ Vigil creates a fresh empty config on next startup. Re-add your rooms or
 restore from a previously exported `vigil_config.json` backup using the
 **Import** button in the Settings screen.
 
-**Vigil won't start -- "SyntaxError"**
+**Imported config does not load or shows an error**
 
-You are running Python older than 3.10. Check with `python --version` and
-install 3.10 or newer from https://www.python.org/downloads/
+1. The import file must be valid JSON -- open it in a text editor and check
+   for missing commas or brackets
+2. The file must contain a `workspaces` array at the top level
+3. If the file was exported from an older version, Vigil will migrate it
+   automatically on import
+
+**Settings changes are not saving**
+
+1. Look for the yellow "unsaved" dot next to the save indicator
+2. Click **SAVE** explicitly -- changes are not auto-saved
+3. Check that the Vigil folder is not read-only (right-click the folder,
+   Properties, uncheck Read-only)
+
+### Network & Performance Issues
+
+**Startup is slow with many devices**
+
+Vigil limits checks to 10 concurrent requests to avoid flooding the network.
+Devices are checked sequentially within each room. With many rooms and devices,
+the initial poll cycle will take longer. Rooms transition from blue to their
+final color as results come in.
+
+**Devices show high latency or intermittent offline**
+
+1. Check for network congestion between Vigil and the devices
+2. Increase the device timeout (Settings > device > Timeout)
+3. If using ping, try switching to TCP-based checks (SSH or HTTP) which
+   may be more reliable on congested networks
+4. Reduce the number of rooms polling simultaneously by staggering poll
+   intervals
 
 ---
 
