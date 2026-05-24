@@ -676,9 +676,6 @@ function _initRoomDragOnce(grid) {
   });
 }
 
-// ── room status rollup: worst-of devices, used for status strip + glow ─
-//   unchecked (blue) = no device polled yet; pending (blue) = some polled;
-//   offline > degraded > online > unknown.
 function _roomStatus(devs) {
   if (!devs || !devs.length) return 'unknown';
   let online = 0, offline = 0, pending = 0;
@@ -686,14 +683,12 @@ function _roomStatus(devs) {
     const s = d.status || 'pending';
     if (s === 'online') online++;
     else if (s === 'offline') offline++;
-    else if (s === 'pending') pending++;
+    else pending++;
   }
   if (pending === devs.length) return 'pending';
-  if (pending > 0) return 'pending';
-  if (offline === devs.length) return 'offline';
-  if (offline > 0) return 'degraded';
   if (online === devs.length) return 'online';
-  return 'unknown';
+  if (offline === devs.length) return 'offline';
+  return 'degraded';
 }
 
 // ── per-room dashboard resize: persist size to config.json via API ─────

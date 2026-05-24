@@ -173,7 +173,6 @@ header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;ba
     0 0 28px oklch(73% 0.14 65 / 0.08);
 }
 .room-card[data-status="pending"]{--status-color:var(--status-pending);--status-glow:var(--status-pending-glow)}
-.room-card[data-status="unchecked"]{--status-color:var(--status-pending);--status-glow:var(--status-pending-glow)}
 .room-card[data-status="unknown"]{--status-color:var(--status-unknown);--status-glow:var(--status-unknown-glow)}
 .room-card::after{content:'';position:absolute;bottom:3px;right:3px;width:8px;height:8px;border-right:2px solid var(--border3);border-bottom:2px solid var(--border3);border-radius:0 0 2px 0;opacity:0.25;pointer-events:none;z-index:2;transition:opacity var(--dur-fast) var(--ease-out)}
 .room-card:hover::after{opacity:0.5}
