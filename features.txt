@@ -1,0 +1,207 @@
+VIGIL — Feature List
+====================
+
+CAPACITY
+  - 4 default workspaces (up to 8)
+  - 50 rooms per workspace (200 rooms default)
+  - 4 devices per room (800 devices default)
+  - 16-worker thread pool for parallel polling
+
+AUTHENTICATION & SECURITY
+  1.  Optional PIN protection (4+ characters)
+  2.  PIN change while authenticated
+  3.  PIN disable with current PIN confirmation
+  4.  8-hour expiring session tokens via HTTP-only cookies
+  5.  Brute force protection: 5 failed attempts lock IP for 60 seconds
+  6.  PBKDF2-SHA256 PIN hashing with auto-migration from legacy SHA256
+  7.  All sessions destroyed on PIN change
+  8.  Auto-generated HTTPS self-signed certificate (10-year validity, RSA 2048)
+  9.  Windows Root CA trust installation on first launch
+ 10.  Chrome certificate bypass workaround support
+ 11.  Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy, CSP, HSTS
+
+MONITORING INFRASTRUCTURE
+ 12.  Continuous background device polling
+ 13.  Per-room poll intervals (5–120 minutes)
+ 14.  10-second cooldown on manual poll triggers
+ 15.  Parallel room polling via 8-worker thread pool
+ 16.  ICMP Ping check (platform-specific)
+ 17.  UDP port probe with ConnectionRefusedError handling
+ 18.  SSH port check with banner capture
+ 19.  HTTP/HTTPS HEAD request probe (self-signed SSL support)
+ 20.  Per-device timeout control (0.5–30 seconds)
+ 21.  Four status states: online, offline, pending, unknown
+ 22.  Millisecond-precision latency measurement
+ 23.  Continuous uptime tracking (online_since timestamp)
+ 24.  Rolling 10-sample average latency
+ 25.  Status persistence across restarts via status.json
+ 26.  Graceful poll engine shutdown with status flush
+
+WORKSPACE MANAGEMENT
+ 27.  Four default workspaces (I, II, III, IIII) — up to 8 available
+ 28.  Workspace rename
+ 29.  Independent room/device lists per workspace
+ 30.  Pop-out workspace in separate browser window
+ 31.  Quick-switch between workspaces via output buttons
+ 32.  URL-locked workspace view (/w/<workspace-id>)
+
+ROOMS (MONITORING GROUPS)
+ 33.  Room creation (max 50 per workspace)
+ 34.  Room editing (name and poll interval)
+ 35.  Soft-delete with 24-hour recovery window
+ 36.  Drag-and-drop room reordering with API persistence
+ 37.  Live poll status display (polling now, last polled, next due)
+ 38.  Recently Removed list for recovering soft-deleted rooms
+ 39.  Permanent deletion after recovery period
+ 40.  Restored rooms auto-placed in original or first available workspace
+
+DEVICES (TARGETS)
+ 41.  Device creation with name, IP/hostname, check type, ports
+ 42.  Device editing (all parameters)
+ 43.  Device deletion
+ 44.  IPv4 and FQDN hostname validation
+ 45.  Four check types: ICMP Ping, UDP, SSH, HTTP(S)
+ 46.  Per-device port configuration (UDP default 9, SSH 22, HTTP 80)
+ 47.  Max 4 devices per room
+ 48.  Real-time status badge with color coding
+
+DASHBOARD DISPLAY
+ 49.  Resizable card grid layout
+ 50.  Room status rollup (pending > offline > degraded > online > unknown)
+ 51.  Status color coding: green, red, yellow, gray
+ 52.  Vertical LED rail showing per-device status
+ 53.  Multi-column device table (Device, Status, IP, Uptime, Latency)
+ 54.  Device row hover highlighting
+ 55.  User-resizable room cards with CSS resize and persistence
+ 56.  20px grid snap for room sizing
+ 57.  Room size reset (double-click or button)
+ 58.  Draggable column header dividers with global resize
+ 59.  Column width persistence in localStorage
+ 60.  Column width reset on double-click
+ 61.  Pulsing status light animation (online/pending)
+ 62.  Empty state messaging
+ 63.  Room drag-and-drop reordering with visual feedback
+ 64.  Drag opacity and dashed outline feedback
+ 65.  8-second auto-refresh on Dashboard tab
+ 66.  Responsive grid: 3 columns (desktop), 2 (tablet), 1 (phone)
+ 67.  Human-readable uptime formatting (Xd Xh, Xh Xm, Xm, Xs)
+ 68.  Latency formatting (< 1 ms, Xms) with rolling average
+ 69.  Colored glow effect on status indicators
+ 70.  Red border glow on offline rooms
+ 71.  Amber border glow on degraded rooms
+ 72.  Poll status tooltip on hover
+
+SETTINGS & CONFIGURATION
+ 73.  Settings screen with tabbed interface
+ 74.  Rooms tab: creation, listing, device management
+ 75.  Security tab: PIN enable/disable/change
+ 76.  Configuration tab: export/import and file management
+ 77.  Workspace name editor and pop-out button
+ 78.  Inline room creation form (name + interval)
+ 79.  Collapsible inline device creation form per room
+ 80.  Edit/delete buttons per device in settings
+ 81.  Device edit modal with all parameters
+ 82.  Room edit modal (name + interval)
+ 83.  Workspace rename modal
+ 84.  Client-side form validation
+ 85.  Port field visibility toggle based on check type
+
+DATA MANAGEMENT
+ 86.  Config export (download config.json, PIN excluded)
+ 87.  Config import (upload and replace)
+ 88.  Auto-backup before import (config.backup.json)
+ 89.  Automatic legacy config migration on load
+ 90.  Atomic config writes via temp file + rename
+ 91.  Config lock retry with exponential backoff (5 attempts)
+ 92.  Auto-flush status.json every poll tick
+ 93.  First-run default config creation
+ 94.  Workspace/room/device count display in footer
+
+USER INTERFACE
+ 95.  Two-tab navigation: Dashboard and Settings
+ 96.  VIGIL wordmark with amber logo mark
+ 97.  Real-time clock display (date + time, updated every second)
+ 98.  Live online/offline device counter in header
+ 99.  Average latency stat across all online devices
+100.  Relative last-poll timestamp in header
+101.  Status pill badges in header
+102.  Footer status bar (device count, save indicator, version)
+103.  Save indicator: yellow "unsaved" / green "saved <time>"
+104.  Total + pending device count in footer
+105.  Privacy policy modal link in footer
+106.  Full-viewport PIN login gate
+107.  Login error display
+108.  Skeleton loaders during data fetch
+109.  Toast notifications (success/error/info, 3.5s)
+110.  Custom confirmation dialogs for destructive actions
+111.  Modal entry/exit animations
+112.  Semi-transparent blurred backdrop behind modals
+113.  Styled empty states with helpful text
+
+NOTIFICATIONS
+114.  Browser desktop notifications on status change
+115.  Lazy notification permission request
+116.  Offline alert notification
+117.  Online alert notification
+118.  Custom vigil-icon.png in notifications
+119.  Batched multi-device change notifications
+120.  Unique notification tags to prevent duplicates
+
+KEYBOARD & ACCESSIBILITY
+121.  Escape key closes any open modal
+122.  Enter key submits forms and login
+123.  Amber outline on keyboard focus-visible
+124.  Auto-focus first field on modal open
+125.  ARIA roles on dialogs, buttons, inputs
+126.  Dark color-scheme meta tag
+127.  Custom styled scrollbars
+128.  prefers-reduced-motion support
+129.  Non-animated skeleton fallback for reduced motion
+
+RESPONSIVENESS & LAYOUT
+130.  Mobile layout with stacked navigation
+131.  Tablet layout: 2-column grid (1200px breakpoint)
+132.  Phone layout: 1-column full-width cards
+133.  Modal max 95vw with scroll on small screens
+134.  Adaptive header with flex-wrap reflow
+135.  28px minimum touch targets
+136.  Proper viewport meta tag (initial-scale=1.0)
+
+THEMING & STYLING
+137.  Dark mode default (no light mode)
+138.  OKLCH perceptually-uniform color space
+139.  Warm copper/amber accent throughout
+140.  Subtle radial gradient background
+141.  Typography: Tomorrow (display), Geist (UI), JetBrains Mono (code)
+142.  6px standard border radius
+143.  Small/medium/large shadow system
+144.  Custom cubic-bezier ease functions
+145.  Duration tokens: Fast (150ms), Normal (220ms), Slow (380ms)
+146.  Button states: hover, active, focus, disabled, loading
+147.  Consistent form input styling with amber focus
+148.  Custom autofill override styling
+149.  Webkit scrollbar theme matching
+
+STARTUP & CLI
+150.  CLI arguments: --host, --port, --no-https, --no-browser, --debug
+151.  Port availability check before binding
+152.  HTTPS certificate generation and loading
+153.  Auto-launch browser on startup
+154.  Startup banner: app name, version, URL, config path, auth status
+155.  First-run config detection and creation
+156.  Rotating log file (5MB max, 3 backups)
+157.  Simultaneous console + file logging
+158.  Flask debug mode (--debug)
+159.  Auto-reloader disabled to prevent double-polling
+160.  Network warning if binding to LAN without PIN
+
+OPERATIONAL
+161.  Manual poll trigger button
+162.  Real-time polling progress indicator
+163.  Graceful thread shutdown on exit
+164.  Config persistence across restarts
+165.  Status restoration from status.json on startup
+166.  No outbound network calls except configured targets
+167.  Google Fonts CDN with system font fallback
+168.  PyInstaller single-file executable support
+169.  Cross-platform: Windows, macOS, Linux

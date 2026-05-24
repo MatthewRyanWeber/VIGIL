@@ -1,0 +1,49 @@
+# Runtime logs (rotating: vigil.log, vigil.log.1, .2, .3)
+vigil.log
+vigil.log.*
+vigil-stdout.log
+vigil-stderr.log
+
+# Python cache
+__pycache__/
+core/__pycache__/
+*.pyc
+
+# User config (contains real IPs / room names)
+config.json
+
+# Device status cache (regenerated at runtime)
+status.json
+
+# Backups & scratch files
+config.backup.json
+*.bak
+*.tmp
+.served-index.html
+.api-ws.json
+.commit-msg.txt
+vigil-preview.html
+
+# Self-signed certificate (regenerated on first run)
+vigil-cert.pem
+vigil-key.pem
+*.pem
+
+# Trust marker (per-machine)
+.vigil-trust-installed
+
+# PyInstaller build artifacts
+Vigilwin11/build/
+Vigilwin11/dist/
+*.spec.bak
+
+# Node artifacts (screenshot capture)
+node_modules/
+package.json
+package-lock.json
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
