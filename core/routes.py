@@ -50,8 +50,11 @@ def _security_headers(resp):
         "img-src 'self' data:; "
         "frame-ancestors 'none'"
     )
+    resp.headers["Access-Control-Allow-Origin"] = "null"
     if app.config["USING_HTTPS"]:
         resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    else:
+        resp.headers["X-Vigil-Warning"] = "Running without HTTPS — PIN auth is not secure over plain HTTP"
     if request.path.startswith("/api/"):
         resp.headers["Cache-Control"] = "no-store"
     return resp
@@ -132,8 +135,8 @@ def api_auth_change_pin():
     data = request.get_json(silent=True) or {}
     current = data.get("current_pin", "")
     new_pin = data.get("new_pin", "").strip()
-    if not new_pin or len(new_pin) < 4:
-        return jsonify({"error": "New PIN must be at least 4 characters."}), 400
+    if not new_pin or len(new_pin) < 6:
+        return jsonify({"error": "New PIN must be at least 6 characters."}), 400
     config = load_config()
     stored = config.get("pin_hash")
     if stored and not verify_pin(current, stored):
