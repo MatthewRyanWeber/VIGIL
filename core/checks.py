@@ -16,9 +16,22 @@ def clamp(value, lo, hi, default):
 
 # ─── Connectivity probes ─────────────────────────────────────────────────────
 
+def _validate_target(target: str) -> str:
+    """Validate and sanitize a network target. Rejects shell metacharacters."""
+    import re
+    target = target.strip()
+    if not target:
+        raise ValueError("Empty target")
+    if not re.match(r'^[a-zA-Z0-9._:\-\[\]]+$', target):
+        raise ValueError(f"Invalid target characters: {target}")
+    if len(target) > 253:
+        raise ValueError(f"Target too long: {len(target)}")
+    return target
+
 def _resolve(target: str) -> str:
     """Resolve a hostname to an IP for probes that need a raw address.
     Returns the input unchanged if it's already an IP."""
+    target = _validate_target(target)
     try:
         return socket.getaddrinfo(target, None, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
     except socket.gaierror:
