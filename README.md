@@ -1024,4 +1024,27 @@ final color as results come in.
 
 ---
 
+## Security
+
+Vigil includes defense-in-depth security:
+
+- **Content Security Policy** — strict CSP (no unsafe-inline) prevents XSS
+- **HTTPS by default** — TLS 1.2+ with HSTS when enabled
+- **Target validation** — all network targets validated against shell metacharacters before subprocess calls
+- **PIN authentication** — PBKDF2 hashed, 6+ character minimum, 8-hour session expiry
+- **Localhost binding** — default 127.0.0.1, optional LAN access
+- **DNS rebinding protection** — host header validation
+
+## Legal
+
+- [Privacy Policy](docs/PRIVACY.md) — Vigil collects zero data. All processing is local.
+- [Terms of Service](docs/TERMS.md) — MIT license, network authorization responsibility.
+- [CCPA Compliance](docs/CCPA.md) — No personal information collected or processed.
+
+## License
+
+MIT
+
+---
+
 *Vigil v2.0*
