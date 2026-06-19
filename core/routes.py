@@ -41,10 +41,15 @@ def _security_headers(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "no-referrer"
+    # 'unsafe-inline' is required because the UI is wired with inline onclick
+    # handlers and dynamically-generated inline styles (room sizes, grid cols).
+    # Safe here: all user-supplied values are HTML-escaped via esc() before
+    # insertion, and the server binds to loopback by default. Tightening this
+    # to a strict policy would require migrating every handler to addEventListener.
     resp.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self'; "
-        "style-src 'self' https://fonts.googleapis.com; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src https://fonts.gstatic.com; "
         "connect-src 'self'; "
         "img-src 'self' data:; "
@@ -54,7 +59,7 @@ def _security_headers(resp):
     if app.config["USING_HTTPS"]:
         resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     else:
-        resp.headers["X-Vigil-Warning"] = "Running without HTTPS — PIN auth is not secure over plain HTTP"
+        resp.headers["X-Vigil-Warning"] = "Running without HTTPS - PIN auth is not secure over plain HTTP"
     if request.path.startswith("/api/"):
         resp.headers["Cache-Control"] = "no-store"
     return resp

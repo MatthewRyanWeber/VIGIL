@@ -1,12 +1,12 @@
 import ssl, time, socket, platform, subprocess, threading, concurrent.futures
 from urllib.request import urlopen, Request
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 from core.config import (
     DEFAULT_PING_TIMEOUT, DEFAULT_TIMEOUT, MIN_TIMEOUT, MAX_TIMEOUT,
     DEFAULT_UDP_PORT, DEFAULT_SSH_PORT, DEFAULT_ROOM_INTERVAL,
     MIN_ROOM_INTERVAL, MAX_ROOM_INTERVAL, load_config, log,
 )
-from core.status import set_status, flush_status
+from core.status import set_status, flush_status, prune_status
 
 
 def clamp(value, lo, hi, default):
@@ -16,20 +16,38 @@ def clamp(value, lo, hi, default):
 
 # ─── Connectivity probes ─────────────────────────────────────────────────────
 
+def _validate_target(target: str) -> str:
+    """Validate and sanitize a network target. Rejects shell metacharacters."""
+    import re
+    target = target.strip()
+    if not target:
+        raise ValueError("Empty target")
+    if not re.match(r'^[a-zA-Z0-9._:\-\[\]]+$', target):
+        raise ValueError(f"Invalid target characters: {target}")
+    if len(target) > 253:
+        raise ValueError(f"Target too long: {len(target)}")
+    return target
+
 def _resolve(target: str) -> str:
     """Resolve a hostname to an IP for probes that need a raw address.
     Returns the input unchanged if it's already an IP."""
+    target = _validate_target(target)
     try:
         return socket.getaddrinfo(target, None, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
     except socket.gaierror:
         return target
 
-def ping_device(target: str, timeout: int = DEFAULT_PING_TIMEOUT):
+def ping_device(target: str, timeout: float = DEFAULT_PING_TIMEOUT):
     ip = _resolve(target)
     system = platform.system().lower()
-    cmd = (["ping", "-n", "1", "-w", str(timeout * 1000), ip]
-           if system == "windows" else
-           ["ping", "-c", "1", "-W", str(timeout), ip])
+    # Windows -w is milliseconds; Linux/mac -W is whole seconds. Never let a
+    # sub-second timeout round down to 0 — that makes ping fail instantly.
+    if system == "windows":
+        wait = str(max(1, int(timeout * 1000)))
+        cmd = ["ping", "-n", "1", "-w", wait, ip]
+    else:
+        wait = str(max(1, int(round(timeout))))
+        cmd = ["ping", "-c", "1", "-W", wait, ip]
     t0 = time.monotonic()
     try:
         r = subprocess.run(cmd, stdout=subprocess.DEVNULL,
@@ -45,7 +63,11 @@ def udp_handshake(target: str, port: int, timeout: float = DEFAULT_TIMEOUT):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(timeout)
     try:
-        sock.sendto(b"\x00" * 4, (ip, port))
+        # connect() is what lets the kernel deliver ICMP port-unreachable as
+        # ConnectionRefusedError; on an unconnected socket that signal is lost
+        # and a closed-but-alive host can't be distinguished from a dead one.
+        sock.connect((ip, port))
+        sock.send(b"\x00" * 4)
         sock.recv(64)
         return True, (time.monotonic() - t0) * 1000
     except socket.timeout:
@@ -85,6 +107,10 @@ def http_check(target: str, port: int = 80, timeout: float = DEFAULT_TIMEOUT):
         req = Request(url, method="HEAD")
         urlopen(req, timeout=timeout, context=_no_verify_ctx)
         return True, (time.monotonic() - t0) * 1000
+    except HTTPError:
+        # The server answered with an HTTP status (401/403/404/405/5xx).
+        # That proves it's up — only a transport failure means offline.
+        return True, (time.monotonic() - t0) * 1000
     except URLError:
         return False, None
     except Exception:
@@ -95,7 +121,7 @@ def http_check(target: str, port: int = 80, timeout: float = DEFAULT_TIMEOUT):
 # and add its key to VALID_CHECK_TYPES in config.py.
 
 CHECK_REGISTRY = {
-    "ping": lambda dev, t: ping_device(dev["ip"], int(round(t))),
+    "ping": lambda dev, t: ping_device(dev["ip"], t),
     "udp":  lambda dev, t: udp_handshake(dev["ip"], int(dev.get("udp_port", DEFAULT_UDP_PORT)), t),
     "ssh":  lambda dev, t: ssh_check(dev["ip"], int(dev.get("ssh_port", DEFAULT_SSH_PORT)), t),
     "http": lambda dev, t: http_check(dev["ip"], int(dev.get("http_port", 80)), t),
@@ -166,6 +192,7 @@ class PollEngine:
         now    = time.monotonic()
         config = load_config()
         all_rooms = [r for ws in config.get("workspaces", []) for r in ws.get("rooms", [])]
+        prune_status(d["id"] for room in all_rooms for d in room.get("devices", []) if d.get("id"))
         for room in all_rooms:
             rid      = room.get("id")
             interval = clamp(room.get("interval", DEFAULT_ROOM_INTERVAL),

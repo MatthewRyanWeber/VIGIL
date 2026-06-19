@@ -41,6 +41,11 @@ def _security_headers(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "no-referrer"
+    # 'unsafe-inline' is required because the UI is wired with inline onclick
+    # handlers and dynamically-generated inline styles (room sizes, grid cols).
+    # Safe here: all user-supplied values are HTML-escaped via esc() before
+    # insertion, and the server binds to loopback by default. Tightening this
+    # to a strict policy would require migrating every handler to addEventListener.
     resp.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline'; "
@@ -50,8 +55,11 @@ def _security_headers(resp):
         "img-src 'self' data:; "
         "frame-ancestors 'none'"
     )
+    resp.headers["Access-Control-Allow-Origin"] = "null"
     if app.config["USING_HTTPS"]:
         resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    else:
+        resp.headers["X-Vigil-Warning"] = "Running without HTTPS - PIN auth is not secure over plain HTTP"
     if request.path.startswith("/api/"):
         resp.headers["Cache-Control"] = "no-store"
     return resp
@@ -132,8 +140,8 @@ def api_auth_change_pin():
     data = request.get_json(silent=True) or {}
     current = data.get("current_pin", "")
     new_pin = data.get("new_pin", "").strip()
-    if not new_pin or len(new_pin) < 4:
-        return jsonify({"error": "New PIN must be at least 4 characters."}), 400
+    if not new_pin or len(new_pin) < 6:
+        return jsonify({"error": "New PIN must be at least 6 characters."}), 400
     config = load_config()
     stored = config.get("pin_hash")
     if stored and not verify_pin(current, stored):
@@ -194,10 +202,16 @@ def _purge_expired_deletions(config):
     if not deleted:
         return
     cutoff = datetime.now(timezone.utc).timestamp() - DELETED_ROOM_RETENTION
-    config["_deleted_rooms"] = [
-        e for e in deleted
-        if datetime.fromisoformat(e["deleted_at"]).timestamp() > cutoff
-    ]
+
+    def _still_fresh(entry):
+        # A malformed/missing deleted_at (e.g. from a hand-edited or imported
+        # config) must not crash the endpoint — keep the entry rather than throw.
+        try:
+            return datetime.fromisoformat(entry["deleted_at"]).timestamp() > cutoff
+        except (KeyError, ValueError, TypeError):
+            return True
+
+    config["_deleted_rooms"] = [e for e in deleted if _still_fresh(e)]
 
 def _find_device(room, device_id):
     return next((d for d in room.get("devices", []) if d["id"] == device_id), None)

@@ -1476,7 +1476,7 @@ async function changePin() {
   if (!cur || !nw) return;
   const current_pin = cur.value;
   const new_pin = nw.value;
-  if (!new_pin || new_pin.length < 4) { notify('New PIN must be at least 4 characters.', 'error'); nw.focus(); return; }
+  if (!new_pin || new_pin.length < 6) { notify('New PIN must be at least 6 characters.', 'error'); nw.focus(); return; }
   try {
     await api('POST', '/api/auth/change-pin', { current_pin, new_pin });
     cur.value = ''; nw.value = '';
@@ -1490,7 +1490,7 @@ async function enablePin() {
   const inp = $id('sec-enable-pin');
   if (!inp) return;
   const pin = inp.value.trim();
-  if (!pin || pin.length < 4) { notify('PIN must be at least 4 characters.', 'error'); inp.focus(); return; }
+  if (!pin || pin.length < 6) { notify('PIN must be at least 6 characters.', 'error'); inp.focus(); return; }
   try {
     await api('POST', '/api/auth/change-pin', { current_pin: '', new_pin: pin });
     await api('POST', '/api/auth/login', { pin });
@@ -1550,7 +1550,7 @@ function renderSecurityTab() {
           </div>
           <div class="form-group">
             <label class="form-label" for="sec-new-pin">New PIN</label>
-            <input class="input sec-pin-input" type="password" id="sec-new-pin" placeholder="Min 4 characters">
+            <input class="input sec-pin-input" type="password" id="sec-new-pin" placeholder="Min 6 characters">
           </div>
           <button class="btn primary" onclick="changePin()">Update PIN</button>
         </div>
@@ -1578,7 +1578,7 @@ function renderSecurityTab() {
         <div class="sec-form-row">
           <div class="form-group">
             <label class="form-label" for="sec-enable-pin">New PIN</label>
-            <input class="input sec-pin-input" type="password" id="sec-enable-pin" placeholder="Min 4 characters">
+            <input class="input sec-pin-input" type="password" id="sec-enable-pin" placeholder="Min 6 characters">
           </div>
           <button class="btn primary" onclick="enablePin()">Enable PIN</button>
         </div>

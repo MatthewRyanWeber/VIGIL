@@ -5,98 +5,21 @@
       "name": "I",
       "rooms": [
         {
-          "id": "172b140b-d0e9-4e34-996e-b62e7647b61c",
-          "name": "Hamilton 100",
+          "id": "example-room-1",
+          "name": "Server Room",
           "interval": 300,
           "devices": [
             {
-              "id": "ec91da4d-f294-4c86-92f9-43295ed98261",
-              "name": "PRO",
-              "ip": "127.0.0.1",
+              "id": "example-device-1",
+              "name": "Gateway",
+              "ip": "192.168.1.1",
               "check_type": "ping",
               "udp_port": 9,
               "ssh_port": 22,
               "http_port": 80,
               "timeout": 2.0
             }
-          ],
-          "layout": {
-            "w": 560,
-            "h": 220
-          }
-        },
-        {
-          "id": "e5c4cbe6-099d-4368-965e-415b29502459",
-          "name": "Hamilton 200",
-          "interval": 300,
-          "devices": [
-            {
-              "id": "5c58451c-dfac-4a5c-a96a-0a507c7ec659",
-              "name": "PRO",
-              "ip": "10.10.10.20",
-              "check_type": "ping",
-              "udp_port": 9,
-              "ssh_port": 22,
-              "http_port": 80,
-              "timeout": 2.0
-            }
-          ],
-          "layout": {
-            "w": 660,
-            "h": 220
-          }
-        },
-        {
-          "id": "2a4ee037-ba58-48be-b71f-fb99f9ed5ec5",
-          "name": "Hamilton 300",
-          "interval": 300,
-          "devices": [
-            {
-              "id": "15295a86-9d84-429a-945e-470589eee72f",
-              "name": "Pro",
-              "ip": "127.0.0.1",
-              "check_type": "ping",
-              "udp_port": 9,
-              "ssh_port": 22,
-              "http_port": 80,
-              "timeout": 2.0
-            },
-            {
-              "id": "6106e0d5-8792-464f-a830-731802ee1629",
-              "name": "TP",
-              "ip": "10.10.10.20",
-              "check_type": "ping",
-              "udp_port": 9,
-              "ssh_port": 22,
-              "http_port": 80,
-              "timeout": 2.0
-            }
-          ],
-          "layout": {
-            "w": 700,
-            "h": 220
-          }
-        },
-        {
-          "id": "220cf126-2e15-406e-8d66-26225e9bdc21",
-          "name": "mikes room",
-          "interval": 300,
-          "devices": [
-            {
-              "id": "7d6de6f3-0b7c-42c9-92aa-9f8676ff3358",
-              "name": "Mac",
-              "ip": "127.0.0.1",
-              "check_type": "ping",
-              "udp_port": 9,
-              "ssh_port": 22,
-              "http_port": 80,
-              "timeout": 2.0
-            }
-          ],
-          "layout": {
-            "w": 580,
-            "h": 240
-          }
+          ]
         }
       ]
     },
@@ -114,33 +37,6 @@
       "id": "ws-output-4",
       "name": "IIII",
       "rooms": []
-    }
-  ],
-  "_deleted_rooms": [
-    {
-      "room": {
-        "id": "example-room-1",
-        "name": "Server Room",
-        "interval": 300,
-        "devices": [
-          {
-            "id": "example-device-1",
-            "name": "Hamilton 100",
-            "ip": "127.0.0.1",
-            "check_type": "ping",
-            "udp_port": 9,
-            "ssh_port": 22,
-            "timeout": 2.0,
-            "http_port": 80
-          }
-        ],
-        "layout": {
-          "w": 960,
-          "h": 600
-        }
-      },
-      "workspace_id": "ws-output-1",
-      "deleted_at": "2026-05-24T19:25:42.358431+00:00"
     }
   ]
 }
