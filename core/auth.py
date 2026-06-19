@@ -32,9 +32,12 @@ def is_login_locked(ip: str) -> tuple[bool, int]:
         if not record:
             return False, 0
         failures, locked_until = record
-        if failures >= LOGIN_MAX_FAILURES and time.time() < locked_until:
-            return True, int(locked_until - time.time())
-        if time.time() >= locked_until:
+        # Only expire the record once an actual lockout has elapsed. Records
+        # below the threshold carry locked_until=0; popping them here would
+        # reset the count on every attempt and the lockout would never engage.
+        if failures >= LOGIN_MAX_FAILURES:
+            if time.time() < locked_until:
+                return True, int(locked_until - time.time())
             _login_failures.pop(ip, None)
         return False, 0
 

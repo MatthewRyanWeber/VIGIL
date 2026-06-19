@@ -42,6 +42,19 @@ def set_status(device_id: str, status: str, latency_ms=None) -> None:
         }
         _dirty = True
 
+def prune_status(valid_ids) -> None:
+    """Drop status entries for devices no longer in the config so status.json
+    and /api/status don't accumulate orphans after deletes/imports."""
+    global _dirty
+    valid = set(valid_ids)
+    with _status_lock:
+        stale = [did for did in _status if did not in valid]
+        for did in stale:
+            del _status[did]
+        if stale:
+            _dirty = True
+            log.info(f"Pruned status for {len(stale)} removed device(s).")
+
 def public_status(device_id: str) -> dict:
     s = dict(get_status(device_id))
     s.pop("_latency_history", None)

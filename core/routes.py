@@ -197,10 +197,16 @@ def _purge_expired_deletions(config):
     if not deleted:
         return
     cutoff = datetime.now(timezone.utc).timestamp() - DELETED_ROOM_RETENTION
-    config["_deleted_rooms"] = [
-        e for e in deleted
-        if datetime.fromisoformat(e["deleted_at"]).timestamp() > cutoff
-    ]
+
+    def _still_fresh(entry):
+        # A malformed/missing deleted_at (e.g. from a hand-edited or imported
+        # config) must not crash the endpoint — keep the entry rather than throw.
+        try:
+            return datetime.fromisoformat(entry["deleted_at"]).timestamp() > cutoff
+        except (KeyError, ValueError, TypeError):
+            return True
+
+    config["_deleted_rooms"] = [e for e in deleted if _still_fresh(e)]
 
 def _find_device(room, device_id):
     return next((d for d in room.get("devices", []) if d["id"] == device_id), None)
