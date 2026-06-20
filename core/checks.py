@@ -100,21 +100,26 @@ _no_verify_ctx.check_hostname = False
 _no_verify_ctx.verify_mode = ssl.CERT_NONE
 
 def http_check(target: str, port: int = 80, timeout: float = DEFAULT_TIMEOUT):
-    scheme = "https" if port == 443 else "http"
-    url = f"{scheme}://{target}:{port}/"
+    # 443/8443 are conventionally TLS, so try HTTPS first there; for any other
+    # port try plain HTTP first then fall back to HTTPS. This detects services
+    # on non-standard TLS ports instead of assuming everything but 443 is HTTP.
+    schemes = ("https", "http") if port in (443, 8443) else ("http", "https")
     t0 = time.monotonic()
-    try:
-        req = Request(url, method="HEAD")
-        urlopen(req, timeout=timeout, context=_no_verify_ctx)
-        return True, (time.monotonic() - t0) * 1000
-    except HTTPError:
-        # The server answered with an HTTP status (401/403/404/405/5xx).
-        # That proves it's up — only a transport failure means offline.
-        return True, (time.monotonic() - t0) * 1000
-    except URLError:
-        return False, None
-    except Exception:
-        return False, None
+    for scheme in schemes:
+        url = f"{scheme}://{target}:{port}/"
+        try:
+            req = Request(url, method="HEAD")
+            urlopen(req, timeout=timeout, context=_no_verify_ctx)
+            return True, (time.monotonic() - t0) * 1000
+        except HTTPError:
+            # The server answered with an HTTP status (401/403/404/405/5xx).
+            # That proves it's up — only a transport failure means offline.
+            return True, (time.monotonic() - t0) * 1000
+        except (URLError, OSError):
+            continue  # wrong scheme (e.g. TLS on a plain port) or unreachable
+        except Exception:
+            continue
+    return False, None
 
 # ─── Check type registry ────────────────────────────────────────────────────
 # Adding a new check type: add the probe function above, register it here,

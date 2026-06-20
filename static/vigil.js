@@ -3,7 +3,7 @@
 //   addRoom, deleteRoom, openRoomModal, closeRoomModal, saveRoomSettings,
 //   openAddDevice, closeAddDevice, submitDevice, toggleAddPort,
 //   openEditDevice, closeEditModal, saveDeviceEdit, toggleEditPort,
-//   deleteDevice, renameWs, closeWsModal, saveWsSettings, deleteWs, popoutWs,
+//   deleteDevice, renameWs, closeWsModal, saveWsSettings, popoutWs,
 //   triggerPoll, pollRoom, exportConfig, importConfig,
 //   showPrivacy, closePrivacy, closeConfirm,
 //   resetRoomSize, changePin, enablePin, disablePin
@@ -354,18 +354,6 @@ function markUnsaved() {
 //  Rename and pop-out for the fixed output workspaces. Creation and
 //  deletion are disabled (workspaces are always present).
 // ═══════════════════════════════════════════════════════════════════════
-/** Switch to a workspace by ID (used internally and from settings rename). */
-function switchWs(wsId) {
-  if (_lockedWsId) return;
-  const idx = _workspaces.findIndex(w => w.id === wsId);
-  if (idx >= 0) switchWorkspace(idx);
-}
-
-
-async function addWorkspace() {
-  notify('All workspaces already exist.', 'error');
-}
-
 /** Open the workspace-rename modal pre-filled with the current name. */
 function renameWs(wsId) {
   const ws = _workspaces.find(w => w.id === wsId);
@@ -398,11 +386,6 @@ async function saveWsSettings() {
   }
 }
 
-/** Workspaces are fixed — deletion is disabled. */
-async function deleteWs(wsId, name) {
-  notify('Output workspaces cannot be deleted.', 'error');
-}
-
 /** Open a workspace in its own browser window at /w/<id>. The receiving page
  *  detects this URL pattern at boot and locks itself to that workspace
  *  (hides the tab bar, ignores switch attempts). Designed for multi-monitor. */
@@ -428,8 +411,6 @@ async function switchWorkspace(idx) {
   renderDash();
   renderSettings();
 }
-const switchOutput = switchWorkspace;
-
 function updateWsButtons() {
   const strip = document.getElementById('ws-strip');
   if (!strip) return;
@@ -1643,11 +1624,11 @@ document.getElementById('ws-modal').addEventListener('keydown', e => {
 // ── Expose to window for HTML onclick handlers ──────────────────────────
 // WARNING: every function referenced by an onclick attribute in HTML or
 // template strings must be listed here, otherwise it silently fails.
-const _api = { doLogin, doLogout, switchTab, switchWorkspace, switchOutput, switchSettingsTab,
+const _api = { doLogin, doLogout, switchTab, switchWorkspace, switchSettingsTab,
   addRoom, deleteRoom, openRoomModal, closeRoomModal, saveRoomSettings,
   openAddDevice, closeAddDevice, submitDevice, toggleAddPort,
   openEditDevice, closeEditModal, saveDeviceEdit, toggleEditPort,
-  deleteDevice, renameWs, closeWsModal, saveWsSettings, deleteWs, popoutWs,
+  deleteDevice, renameWs, closeWsModal, saveWsSettings, popoutWs,
   triggerPoll, pollRoom, exportConfig, importConfig,
   showPrivacy, closePrivacy, closeConfirm,
   resetRoomSize, changePin, enablePin, disablePin };
