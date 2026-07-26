@@ -33,9 +33,9 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements.txt -r requirements-windows.txt pyinstaller
 
-      # onedir (not onefile) so startup is fast and the layout matches the
-      # VigilWin11 folder. --windowed because the installer's shortcuts launch
-      # into the tray; core/config.py drops the stdout log handler to match.
+      # onedir (not onefile) so startup is fast and config.json sits beside the
+      # exe. --windowed because the installer's shortcuts launch into the tray;
+      # core/config.py drops the stdout log handler to match.
       - name: Build
         run: |
           pyinstaller --noconfirm --onedir --windowed --name Vigil `

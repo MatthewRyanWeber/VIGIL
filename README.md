@@ -85,22 +85,17 @@ online, amber when some devices are down, red when all are, blue before the
 first check. Right-click it for online/offline counts, a **Start Vigil when I
 sign in** toggle, and **Quit Vigil**.
 
-### Webpage version (the original)
-
-The earlier build is still published and still supported. It has no tray icon
-and no installer -- you double-click the exe and it opens the dashboard in your
-browser. Take it if you want nothing written outside the folder, or if you are
-running Vigil off a USB stick or a share.
-
 | Download                            | What it is                                  |
 |-------------------------------------|---------------------------------------------|
-| `Vigil-2.0-setup.exe`               | Desktop app -- installer, tray, autostart   |
-| `Vigil-2.0-windows-x64-app.zip`     | Desktop app -- portable, tray, no installer |
-| `Vigil-2.0-windows-x64.zip`         | **Webpage version** -- portable, browser only |
+| `Vigil-2.0-setup.exe`               | Installer -- tray, Start Menu, autostart    |
+| `Vigil-2.0-windows-x64-app.zip`     | Portable -- same app, no installer          |
 
-The [`VigilWin11/`](VigilWin11/) folder in this repo is a checked-in copy of the
-webpage version. See [`VigilWin11/README.md`](VigilWin11/README.md) for
-command-line options, firewall setup, and troubleshooting.
+See [`docs/WINDOWS.md`](docs/WINDOWS.md) for command-line options, firewall
+setup, moving your data between installs, and troubleshooting.
+
+> **Older download:** `Vigil-2.0-windows-x64.zip` on the release is the
+> superseded webpage version -- no tray, no installer. It is left in place so
+> existing links keep working; new installs should use one of the two above.
 
 ---
 
@@ -548,7 +543,7 @@ system folder:
 | How you run Vigil                    | Location of `config.json`                |
 |--------------------------------------|------------------------------------------|
 | From source (`python vigil.py`)      | The folder holding `vigil.py`            |
-| Webpage version / portable zip       | The folder holding `Vigil.exe`           |
+| Portable zip                         | The folder holding `Vigil.exe`           |
 | Desktop app (installer)              | `%LOCALAPPDATA%\Programs\Vigil`          |
 
 **How a save happens.** Vigil writes the new config to a temporary file and
