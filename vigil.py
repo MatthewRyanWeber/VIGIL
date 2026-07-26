@@ -38,6 +38,7 @@ from core.routes import app, verify_ui_file, init_auth_cache
 from core.checks import PollEngine
 from core.status import load_status
 from core.certs import setup_https_cert, launch_browser
+from core import autostart, tray
 
 
 def parse_args():
@@ -47,8 +48,23 @@ def parse_args():
     p.add_argument("--no-https",    dest="no_https",   action="store_true")
     p.add_argument("--no-browser",  dest="no_browser", action="store_true",
                    help="Don't automatically open the browser on startup")
+    p.add_argument("--tray",        action="store_true",
+                   help="Run in the system tray (default for packaged Windows builds)")
+    p.add_argument("--no-tray",     dest="no_tray",    action="store_true",
+                   help="Stay in the foreground; Ctrl+C to quit")
     p.add_argument("--debug",       action="store_true")
     return p.parse_args()
+
+
+def _tray_wanted(args) -> bool:
+    """Packaged Windows builds launch from a shortcut with no console, so the
+    tray is the only way back to the UI or to a clean shutdown. Source runs
+    have a terminal already and stay in the foreground unless asked."""
+    if args.no_tray:
+        return False
+    if args.tray:
+        return True
+    return sys.platform == "win32" and getattr(sys, "frozen", False)
 
 
 def _check_port_available(host: str, port: int) -> None:
@@ -129,14 +145,41 @@ def main():
     # ── Ensure the UI exists on disk ─────────────────────────────────────
     verify_ui_file()
 
+    # ── Keep a login entry pointed at this install ───────────────────────
+    autostart.sync()
+
     # ── Auto-launch browser ──────────────────────────────────────────────
+    url = f"{'http' if args.no_https else 'https'}://127.0.0.1:{args.port}"
     if not args.no_browser:
-        url = f"{'http' if args.no_https else 'https'}://127.0.0.1:{args.port}"
         threading.Timer(1.5, launch_browser, args=(url, not args.no_https)).start()
 
     # ── Flask ────────────────────────────────────────────────────────────
-    app.run(host=args.host, port=args.port, debug=args.debug,
-            use_reloader=False, ssl_context=ssl_ctx)
+    use_tray = _tray_wanted(args)
+    if use_tray and not tray.available():
+        log.warning("Tray requested but pystray/Pillow are missing — "
+                    "install requirements-windows.txt. Running in the foreground.")
+        use_tray = False
+
+    if not use_tray:
+        app.run(host=args.host, port=args.port, debug=args.debug,
+                use_reloader=False, ssl_context=ssl_ctx)
+        return
+
+    # Tray mode: Flask moves to a daemon thread so the tray owns the main
+    # thread, which is where the shell expects its message loop to live.
+    def serve():
+        try:
+            app.run(host=args.host, port=args.port, debug=args.debug,
+                    use_reloader=False, ssl_context=ssl_ctx)
+        except Exception as e:
+            log.critical(f"Server stopped: {e}")
+
+    threading.Thread(target=serve, daemon=True, name="vigil-http").start()
+
+    tray.run(
+        open_ui=lambda: launch_browser(url, not args.no_https),
+        on_quit=lambda: (app.poll_engine.stop(), log.info("Vigil exited.")),
+    )
 
 if __name__ == "__main__":
     main()

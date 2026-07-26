@@ -1,0 +1,9 @@
+# Vigil v2.0 — optional Windows desktop extras
+#
+# Adds the system-tray icon and the "start when I sign in" toggle.
+# Vigil runs fine without these; it just stays in the foreground.
+#
+# Install with: pip install -r requirements.txt -r requirements-windows.txt
+
+pystray>=0.19.5
+Pillow>=10.0.0

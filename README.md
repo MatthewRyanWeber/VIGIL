@@ -73,16 +73,34 @@ no database, nothing to configure beyond Python and two packages.
 
 ## Windows 11 Standalone (.exe)
 
-If you are on Windows 11 and don't want to install Python, use the pre-built
-executable in the [`VigilWin11/`](VigilWin11/) folder.
+If you are on Windows 11 and don't want to install Python, run `Vigil-2.0-setup.exe`
+from the [Releases](https://github.com/MatthewRyanWeber/VIGIL/releases) page.
 
-1. Download the `VigilWin11` folder (or clone this repo)
-2. Double-click `Vigil.exe`
-3. Chrome or Edge opens automatically to `https://127.0.0.1:9443`
+1. Run the installer -- it installs per-user, so there is no admin prompt
+2. Vigil lands in the Start Menu, optionally on the desktop and at sign-in
+3. Launch it; Vigil sits in the system tray and opens `https://127.0.0.1:9443`
 
-No Python, no pip, no command line required. See
-[`VigilWin11/README.md`](VigilWin11/README.md) for full Windows documentation
-including command-line options, firewall setup, and troubleshooting.
+The tray icon is an LED that mirrors the dashboard: green when everything is
+online, amber when some devices are down, red when all are, blue before the
+first check. Right-click it for online/offline counts, a **Start Vigil when I
+sign in** toggle, and **Quit Vigil**.
+
+### Webpage version (the original)
+
+The earlier build is still published and still supported. It has no tray icon
+and no installer -- you double-click the exe and it opens the dashboard in your
+browser. Take it if you want nothing written outside the folder, or if you are
+running Vigil off a USB stick or a share.
+
+| Download                            | What it is                                  |
+|-------------------------------------|---------------------------------------------|
+| `Vigil-2.0-setup.exe`               | Desktop app -- installer, tray, autostart   |
+| `Vigil-2.0-windows-x64-app.zip`     | Desktop app -- portable, tray, no installer |
+| `Vigil-2.0-windows-x64.zip`         | **Webpage version** -- portable, browser only |
+
+The [`VigilWin11/`](VigilWin11/) folder in this repo is a checked-in copy of the
+webpage version. See [`VigilWin11/README.md`](VigilWin11/README.md) for
+command-line options, firewall setup, and troubleshooting.
 
 ---
 
@@ -380,6 +398,7 @@ vigil\
   vigil.py            Entry point -- run this to start the server
   index.html          HTML shell (layout and modals)
   requirements.txt    Package list -- pip install -r requirements.txt
+  requirements-windows.txt  Optional tray extras (pystray, Pillow)
   config.json         Room and device data (auto-created on first run)
   vigil.log           Rotating log (5 MB x 3 backups, max 20 MB)
   README.md           This file
@@ -390,9 +409,14 @@ vigil\
     checks.py         Ping/UDP/SSH probes, poll engine
     routes.py         Flask app and all API route handlers
     certs.py          HTTPS certificate generation, browser launch
+    tray.py           System-tray icon (optional, Windows)
+    autostart.py      Start-at-login toggle (HKCU Run key)
   static\
     vigil.css         All CSS styles
     vigil.js          All JavaScript
+    vigil.ico         App icon (exe, installer, shortcuts)
+  installer\
+    vigil.iss         Inno Setup script -- builds the setup exe
 ```
 
 `index.html`, `core/`, and `static/` must sit next to `vigil.py`.
@@ -513,12 +537,49 @@ on the Dashboard within a few seconds.
 
 ### Saving Configuration
 
-Vigil saves to `config.json` automatically after every add, edit, or delete.
-The save indicator in the header shows a green dot when everything is written
-to disk, and a yellow dot when a write is pending.
+**There is no manual save step.** Every add, edit, delete, reorder, and resize
+is written to `config.json` the moment you make it. You can close the browser,
+quit Vigil, or pull the power cord, and your rooms and devices will be there
+next time.
 
-Click the **SAVE** button (appears when there are pending changes) to force an
-immediate disk flush and see the confirmed timestamp.
+**Where the file lives.** Always beside the program, never in a hidden
+system folder:
+
+| How you run Vigil                    | Location of `config.json`                |
+|--------------------------------------|------------------------------------------|
+| From source (`python vigil.py`)      | The folder holding `vigil.py`            |
+| Webpage version / portable zip       | The folder holding `Vigil.exe`           |
+| Desktop app (installer)              | `%LOCALAPPDATA%\Programs\Vigil`          |
+
+**How a save happens.** Vigil writes the new config to a temporary file and
+then atomically replaces `config.json` with it. A crash or a power loss
+halfway through leaves the old file intact -- there is no window where the
+config is half-written. If the file is locked (antivirus, a text editor, a
+backup agent), Vigil retries five times before logging an error. Concurrent
+edits from two browser tabs are serialized, so one cannot overwrite the other.
+
+**The save indicator** in the footer is a progress light, not a to-do. The dot
+goes yellow while a write is in flight and returns to green with a `saved
+HH:MM:SS` timestamp once the server confirms the write. **SAVE** simply
+rewrites the file and refreshes that timestamp; you never need to press it to
+keep your work.
+
+**What is stored where:**
+
+| File                  | Contents                                    | Safe to delete?              |
+|-----------------------|---------------------------------------------|------------------------------|
+| `config.json`         | Workspaces, rooms, devices, PIN hash        | No -- this is your setup     |
+| `status.json`         | Last known online/offline state and latency | Yes -- rebuilt on next poll  |
+| `config.backup.json`  | Copy made automatically before every import | Yes, once the import looks right |
+
+**Loading on startup.** Vigil reads `config.json` before the first poll and
+restores `status.json` so the dashboard shows last known state instead of a
+screen of blue LEDs while the first check runs. A config from an older version
+is migrated automatically -- see [Requirements](#requirements).
+
+**Moving your setup to another machine or to the desktop app.** Each install
+keeps its own `config.json`, so a new install starts empty. Use **Export** and
+**Import** below, or close both copies and copy `config.json` across by hand.
 
 ### Exporting and Importing Config
 
@@ -977,9 +1038,9 @@ and not yet been re-polled. Click the room refresh button to force a new check.
 **Room added in Settings but nothing appears on the Dashboard**
 
 1. Make sure you clicked **+ Add Room** after typing the room name
-2. Click **SAVE** to write the config -- unsaved rooms are not polled
-3. Refresh the page (F5) if the room still does not appear
-4. Check the Command Prompt window for any error messages
+2. Refresh the page (F5) if the room still does not appear
+3. Confirm the room reached disk -- open `config.json` and look for its name
+4. Check `vigil.log` (or the Command Prompt window) for any error messages
 
 ### Configuration Issues
 
@@ -999,10 +1060,15 @@ restore from a previously exported `vigil_config.json` backup using the
 
 **Settings changes are not saving**
 
-1. Look for the yellow "unsaved" dot next to the save indicator
-2. Click **SAVE** explicitly -- changes are not auto-saved
-3. Check that the Vigil folder is not read-only (right-click the folder,
+Changes save on their own, so a stuck yellow "unsaved" dot means the write is
+failing, not that a button was missed:
+
+1. Check that the Vigil folder is not read-only (right-click the folder,
    Properties, uncheck Read-only)
+2. Look in `vigil.log` for `Config save failed` -- it names the actual error
+3. Make sure `config.json` is not open in another program holding a lock on it
+4. If Vigil sits in Program Files or another protected folder, move it
+   somewhere writable such as your Documents folder
 
 ### Network & Performance Issues
 

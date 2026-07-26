@@ -1,0 +1,140 @@
+# Builds the packaged Windows Vigil binary and the installer on GitHub's
+# Windows runners (PyInstaller cannot cross-compile) and uploads both to a
+# release. Companion to build-macos.yml.
+# Trigger: gh workflow run build-windows.yml -f release_tag=v2.0
+name: build-windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to upload the assets to"
+        required: true
+        default: "v2.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt -r requirements-windows.txt pyinstaller
+
+      # onedir (not onefile) so startup is fast and the layout matches the
+      # VigilWin11 folder. --windowed because the installer's shortcuts launch
+      # into the tray; core/config.py drops the stdout log handler to match.
+      - name: Build
+        run: |
+          pyinstaller --noconfirm --onedir --windowed --name Vigil `
+            --icon static\vigil.ico `
+            --add-data "index.html;." `
+            --add-data "core;core" `
+            --add-data "static;static" `
+            --hidden-import pystray._win32 `
+            vigil.py
+
+      # Boot the frozen binary headless (tray off) and require HTTPS to answer.
+      # Probing with Python, not Invoke-WebRequest: Vigil sets a TLS 1.2 floor
+      # on a self-signed cert, which Windows PowerShell refuses outright.
+      - name: Smoke test
+        run: |
+          $proc = Start-Process -FilePath "dist\Vigil\Vigil.exe" `
+            -ArgumentList "--no-browser","--no-tray","--port","9443" -PassThru
+          $probe = @'
+          import ssl, sys, urllib.request
+          ctx = ssl._create_unverified_context()
+          r = urllib.request.urlopen("https://127.0.0.1:9443/", context=ctx, timeout=5)
+          sys.exit(0 if r.status == 200 else 1)
+          '@
+          $probe = ($probe -split "`n" | ForEach-Object { $_.TrimStart() }) -join "`n"
+          Set-Content -Path probe.py -Value $probe -Encoding utf8
+          foreach ($i in 1..60) {
+            Start-Sleep -Seconds 2
+            python probe.py
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "smoke OK (HTTP 200)"
+              Stop-Process -Id $proc.Id -Force
+              Remove-Item probe.py -Force
+              exit 0
+            }
+            if ($proc.HasExited) {
+              Write-Host "FAIL: Vigil exited before becoming ready (code $($proc.ExitCode))"
+              Get-Content dist\Vigil\vigil.log -ErrorAction SilentlyContinue
+              exit 1
+            }
+          }
+          Write-Host "FAIL: Vigil never became ready"
+          Get-Content dist\Vigil\vigil.log -ErrorAction SilentlyContinue
+          Stop-Process -Id $proc.Id -Force
+          exit 1
+
+      # The smoke test wrote a cert, a log and a status cache into dist —
+      # shipping those would hand every user the same private key.
+      - name: Strip runtime artifacts
+        run: |
+          Remove-Item -Force -ErrorAction SilentlyContinue `
+            dist\Vigil\vigil.log, dist\Vigil\vigil.log.*, dist\Vigil\config.json, `
+            dist\Vigil\status.json, dist\Vigil\vigil-cert.pem, dist\Vigil\vigil-key.pem, `
+            dist\Vigil\.vigil-trust-installed
+          if (Test-Path dist\Vigil\vigil-key.pem) { throw "private key still present in dist" }
+
+      # Inno Setup is preinstalled on the windows runners, but the path depends
+      # on the install scope, so probe rather than hardcode one location.
+      - name: Build installer
+        run: |
+          function Find-ISCC {
+            $paths = @(
+              "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+              "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+              "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+            )
+            foreach ($p in $paths) { if (Test-Path $p) { return $p } }
+            return $null
+          }
+          $iscc = Find-ISCC
+          if (-not $iscc) {
+            choco install innosetup -y --no-progress
+            $iscc = Find-ISCC
+          }
+          if (-not $iscc) { throw "ISCC.exe not found in any known location" }
+          Write-Host "using $iscc"
+          $version = "${{ github.event.inputs.release_tag }}" -replace '^v',''
+          & $iscc "/DAppVersion=$version" installer\vigil.iss
+          if ($LASTEXITCODE -ne 0) { throw "installer build failed" }
+          if (-not (Test-Path "dist\Vigil-$version-setup.exe")) {
+            throw "compile reported success but dist\Vigil-$version-setup.exe is missing"
+          }
+
+      # Deliberately NOT named Vigil-<v>-windows-x64.zip: that asset is the
+      # older webpage version and stays on the release untouched.
+      - name: Package
+        run: |
+          $version = "${{ github.event.inputs.release_tag }}" -replace '^v',''
+          $zip = "dist\Vigil-$version-windows-x64-app.zip"
+          Compress-Archive -Path dist\Vigil -DestinationPath $zip -Force
+          "ZIP=$zip"                              >> $env:GITHUB_ENV
+          "SETUP=dist\Vigil-$version-setup.exe"   >> $env:GITHUB_ENV
+
+      # file#label — the label is what the release page shows, so the two
+      # Windows downloads are told apart at a glance.
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.inputs.release_tag }}" `
+            "$env:SETUP#Desktop app installer (tray, start at sign-in)" `
+            "$env:ZIP#Desktop app portable (tray, no installer)" `
+            --clobber

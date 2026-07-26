@@ -75,14 +75,20 @@ def validate_port(value) -> int | None:
 
 # ─── Logging (rotating file handler, 5 MB x 3 backups) ──────────────────────
 
+_handlers = [
+    RotatingFileHandler(LOG_FILE, maxBytes=5 * 1024 * 1024,
+                        backupCount=3, encoding="utf-8"),
+]
+# A windowed (--noconsole) build has no stdout at all; handing None to
+# StreamHandler makes it fall back to stderr, which is also None, and every
+# log call then raises. The file handler above is the real record anyway.
+if sys.stdout is not None:
+    _handlers.insert(0, logging.StreamHandler(sys.stdout))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        RotatingFileHandler(LOG_FILE, maxBytes=5 * 1024 * 1024,
-                            backupCount=3, encoding="utf-8"),
-    ],
+    handlers=_handlers,
 )
 log = logging.getLogger(APP_NAME)
 
