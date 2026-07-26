@@ -537,12 +537,49 @@ on the Dashboard within a few seconds.
 
 ### Saving Configuration
 
-Vigil saves to `config.json` automatically after every add, edit, or delete.
-The save indicator in the header shows a green dot when everything is written
-to disk, and a yellow dot when a write is pending.
+**There is no manual save step.** Every add, edit, delete, reorder, and resize
+is written to `config.json` the moment you make it. You can close the browser,
+quit Vigil, or pull the power cord, and your rooms and devices will be there
+next time.
 
-Click the **SAVE** button (appears when there are pending changes) to force an
-immediate disk flush and see the confirmed timestamp.
+**Where the file lives.** Always beside the program, never in a hidden
+system folder:
+
+| How you run Vigil                    | Location of `config.json`                |
+|--------------------------------------|------------------------------------------|
+| From source (`python vigil.py`)      | The folder holding `vigil.py`            |
+| Webpage version / portable zip       | The folder holding `Vigil.exe`           |
+| Desktop app (installer)              | `%LOCALAPPDATA%\Programs\Vigil`          |
+
+**How a save happens.** Vigil writes the new config to a temporary file and
+then atomically replaces `config.json` with it. A crash or a power loss
+halfway through leaves the old file intact -- there is no window where the
+config is half-written. If the file is locked (antivirus, a text editor, a
+backup agent), Vigil retries five times before logging an error. Concurrent
+edits from two browser tabs are serialized, so one cannot overwrite the other.
+
+**The save indicator** in the footer is a progress light, not a to-do. The dot
+goes yellow while a write is in flight and returns to green with a `saved
+HH:MM:SS` timestamp once the server confirms the write. **SAVE** simply
+rewrites the file and refreshes that timestamp; you never need to press it to
+keep your work.
+
+**What is stored where:**
+
+| File                  | Contents                                    | Safe to delete?              |
+|-----------------------|---------------------------------------------|------------------------------|
+| `config.json`         | Workspaces, rooms, devices, PIN hash        | No -- this is your setup     |
+| `status.json`         | Last known online/offline state and latency | Yes -- rebuilt on next poll  |
+| `config.backup.json`  | Copy made automatically before every import | Yes, once the import looks right |
+
+**Loading on startup.** Vigil reads `config.json` before the first poll and
+restores `status.json` so the dashboard shows last known state instead of a
+screen of blue LEDs while the first check runs. A config from an older version
+is migrated automatically -- see [Requirements](#requirements).
+
+**Moving your setup to another machine or to the desktop app.** Each install
+keeps its own `config.json`, so a new install starts empty. Use **Export** and
+**Import** below, or close both copies and copy `config.json` across by hand.
 
 ### Exporting and Importing Config
 
@@ -1001,9 +1038,9 @@ and not yet been re-polled. Click the room refresh button to force a new check.
 **Room added in Settings but nothing appears on the Dashboard**
 
 1. Make sure you clicked **+ Add Room** after typing the room name
-2. Click **SAVE** to write the config -- unsaved rooms are not polled
-3. Refresh the page (F5) if the room still does not appear
-4. Check the Command Prompt window for any error messages
+2. Refresh the page (F5) if the room still does not appear
+3. Confirm the room reached disk -- open `config.json` and look for its name
+4. Check `vigil.log` (or the Command Prompt window) for any error messages
 
 ### Configuration Issues
 
@@ -1023,10 +1060,15 @@ restore from a previously exported `vigil_config.json` backup using the
 
 **Settings changes are not saving**
 
-1. Look for the yellow "unsaved" dot next to the save indicator
-2. Click **SAVE** explicitly -- changes are not auto-saved
-3. Check that the Vigil folder is not read-only (right-click the folder,
+Changes save on their own, so a stuck yellow "unsaved" dot means the write is
+failing, not that a button was missed:
+
+1. Check that the Vigil folder is not read-only (right-click the folder,
    Properties, uncheck Read-only)
+2. Look in `vigil.log` for `Config save failed` -- it names the actual error
+3. Make sure `config.json` is not open in another program holding a lock on it
+4. If Vigil sits in Program Files or another protected folder, move it
+   somewhere writable such as your Documents folder
 
 ### Network & Performance Issues
 
