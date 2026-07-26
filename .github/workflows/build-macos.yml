@@ -1,5 +1,5 @@
 # Builds the packaged macOS Vigil binary on GitHub's macOS runners
-# (PyInstaller cannot cross-compile) and uploads the zips to a release.
+# (PyInstaller cannot cross-compile) and uploads the zip to a release.
 # Trigger: gh workflow run build-macos.yml -f release_tag=v2.0
 name: build-macos
 
@@ -22,8 +22,10 @@ jobs:
         include:
           - runner: macos-14   # Apple Silicon
             arch: arm64
-          - runner: macos-13   # last free Intel runner image
-            arch: x86_64
+          # The macos-13 (Intel) leg was removed: the image is retired, so the
+          # job never picked up a runner and sat queued until GitHub cancelled
+          # it at 24h -- which marked otherwise-green runs as cancelled.
+          # timeout-minutes does not help; it only counts execution, not queue.
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
