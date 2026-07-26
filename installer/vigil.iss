@@ -65,8 +65,8 @@ Name: "startup";     Description: "Start {#AppName} when I sign in"; GroupDescri
 ; Everything PyInstaller produced. User data (config.json, status.json,
 ; *.pem, vigil.log) is never shipped, so an upgrade cannot clobber it.
 Source: "..\dist\Vigil\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
-Source: "..\VigilWin11\README.md"; DestDir: "{app}"; DestName: "README.md"; Flags: ignoreversion
-Source: "..\LICENSE";             DestDir: "{app}"; Flags: ignoreversion
+Source: "..\docs\WINDOWS.md"; DestDir: "{app}"; DestName: "README.md"; Flags: ignoreversion
+Source: "..\LICENSE";        DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Comment: "Network device monitor"
